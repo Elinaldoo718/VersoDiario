@@ -1,0 +1,281 @@
+<html><head><base href="https://websim.ai/speedometer/"><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>WebSim Velocímetro de Internet Avançado</title><link rel="manifest" href="/manifest.json"><style>
+body {
+  font-family: 'Arial', sans-serif;
+  background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+  color: #ffffff;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  margin: 0;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+.container {
+  text-align: center;
+  background: rgba(255, 255, 255, 0.1);
+  padding: 2rem;
+  border-radius: 15px;
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+  backdrop-filter: blur(4px);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  max-width: 800px;
+  width: 100%;
+}
+
+h1 {
+  margin-bottom: 1rem;
+  font-size: 2rem;
+  text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+}
+
+.speedometer {
+  width: 200px;
+  height: 200px;
+  border-radius: 50%;
+  background: conic-gradient(from 270deg, #4CAF50 0deg, #FFEB3B 180deg, #F44336 360deg);
+  position: relative;
+  margin: 1rem auto;
+  box-shadow: 0 0 20px rgba(0,0,0,0.3);
+}
+
+.needle {
+  position: absolute;
+  width: 100px;
+  height: 4px;
+  background: #ffffff;
+  top: 100px;
+  left: 100px;
+  transform-origin: 0% 50%;
+  transition: transform 1s cubic-bezier(0.25, 0.1, 0.25, 1);
+}
+
+.speed {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 2rem;
+  font-weight: bold;
+  text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+}
+
+.unit {
+  font-size: 0.8rem;
+  opacity: 0.7;
+}
+
+button {
+  background-color: #4CAF50;
+  border: none;
+  color: white;
+  padding: 15px 32px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  margin: 4px 2px;
+  cursor: pointer;
+  border-radius: 25px;
+  transition: background-color 0.3s, transform 0.1s;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+button:hover {
+  background-color: #45a049;
+  transform: translateY(-2px);
+}
+
+button:active {
+  transform: translateY(1px);
+}
+
+.result {
+  margin-top: 1rem;
+  font-size: 1.2rem;
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+.pulse {
+  animation: pulse 1s infinite;
+}
+
+.explanation {
+  text-align: left;
+  margin-top: 2rem;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 10px;
+}
+
+.explanation h2 {
+  margin-top: 0;
+}
+
+.speedometers {
+  display: flex;
+  justify-content: space-around;
+  flex-wrap: wrap;
+}
+
+#installButton {
+  background-color: #3498db;
+  margin-top: 1rem;
+}
+
+#installButton:hover {
+  background-color: #2980b9;
+}
+
+@media (max-width: 600px) {
+  .speedometer {
+    width: 150px;
+    height: 150px;
+  }
+  
+  .needle {
+    width: 75px;
+    top: 75px;
+    left: 75px;
+  }
+  
+  .speed {
+    font-size: 1.5rem;
+  }
+}
+</style></head><body><div class="container"><h1>WebSim Velocímetro de Internet Avançado</h1><div class="speedometers"><div><h3>Download</h3><div class="speedometer" id="downloadSpeedometer"><div class="needle"></div><div class="speed">0<span class="unit">Mbps</span></div></div></div><div><h3>Upload</h3><div class="speedometer" id="uploadSpeedometer"><div class="needle"></div><div class="speed">0<span class="unit">Mbps</span></div></div></div></div><button id="startTest">Iniciar Teste Completo</button><button id="installButton" style="display: none;">Instalar Aplicativo</button><div class="result" id="result"></div><div class="explanation"><h2>Entenda o Teste de Velocidade</h2><h3>Velocidade de Download</h3><p>A velocidade de download mede quão rápido seu dispositivo pode receber dados da internet. É importante para atividades como streaming de vídeos, baixar arquivos e navegar em sites.</p><h3>Velocidade de Upload</h3><p>A velocidade de upload mede quão rápido seu dispositivo pode enviar dados para a internet. É crucial para atividades como videoconferências, envio de arquivos grandes e jogos online.</p><h3>Ping</h3><p>O ping mede o tempo de resposta entre seu dispositivo e um servidor na internet. Um ping baixo é essencial para jogos online e aplicações em tempo real.</p><h3>Como o Teste é Realizado</h3><p>1. Download: Baixamos um arquivo de tamanho conhecido e medimos o tempo gasto.<br>2. Upload: Enviamos um arquivo de tamanho conhecido e medimos o tempo gasto.<br>3. Ping: Enviamos pequenos pacotes de dados e medimos o tempo de ida e volta.</p><p>A velocidade é calculada dividindo o tamanho do arquivo pelo tempo gasto, convertendo para Mbps (Megabits por segundo).</p></div></div><script>
+const downloadNeedle = document.querySelector('#downloadSpeedometer .needle');
+const uploadNeedle = document.querySelector('#uploadSpeedometer .needle');
+const downloadSpeedDisplay = document.querySelector('#downloadSpeedometer .speed');
+const uploadSpeedDisplay = document.querySelector('#uploadSpeedometer .speed');
+const startButton = document.getElementById('startTest');
+const resultDiv = document.getElementById('result');
+const installButton = document.getElementById('installButton');
+
+let deferredPrompt;
+
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  installButton.style.display = 'inline-block';
+});
+
+installButton.addEventListener('click', async () => {
+  if (deferredPrompt) {
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    if (outcome === 'accepted') {
+      console.log('Usuário aceitou o prompt de instalação');
+    } else {
+      console.log('Usuário recusou o prompt de instalação');
+    }
+    deferredPrompt = null;
+  }
+});
+
+function setNeedleRotation(needle, speed) {
+  const maxSpeed = 100;
+  const rotation = Math.min((speed / maxSpeed) * 180, 180);
+  needle.style.transform = `rotate(${rotation}deg)`;
+}
+
+function updateSpeedDisplay(display, speed) {
+  display.innerHTML = `${speed.toFixed(2)}<span class="unit">Mbps</span>`;
+}
+
+async function measurePing() {
+  const startTime = performance.now();
+  await fetch('https://www.cloudflare.com/cdn-cgi/trace');
+  const endTime = performance.now();
+  return endTime - startTime;
+}
+
+async function measureSpeed(isDownload) {
+  const apiUrl = isDownload 
+    ? 'https://speed.cloudflare.com/__down?bytes=25000000'
+    : 'https://speed.cloudflare.com/__up';
+  const startTime = new Date().getTime();
+  
+  try {
+    if (isDownload) {
+      const response = await fetch(apiUrl);
+      const reader = response.body.getReader();
+      let receivedLength = 0;
+
+      while(true) {
+        const {done, value} = await reader.read();
+        if (done) break;
+        receivedLength += value.length;
+        const currentTime = new Date().getTime();
+        const elapsedTime = (currentTime - startTime) / 1000;
+        const speedMbps = (receivedLength * 8 / (1000000 * elapsedTime));
+        
+        setNeedleRotation(downloadNeedle, speedMbps);
+        updateSpeedDisplay(downloadSpeedDisplay, speedMbps);
+      }
+    } else {
+      const data = new ArrayBuffer(25000000);
+      const response = await fetch(apiUrl, {
+        method: 'POST',
+        body: data
+      });
+    }
+
+    const endTime = new Date().getTime();
+    const totalTime = (endTime - startTime) / 1000;
+    const finalSpeed = isDownload 
+      ? (25000000 * 8 / (1000000 * totalTime))
+      : (25000000 * 8 / (1000000 * totalTime));
+    
+    return finalSpeed;
+  } catch (error) {
+    console.error('Erro ao medir a velocidade:', error);
+    throw error;
+  }
+}
+
+async function runCompleteTest() {
+  try {
+    resultDiv.textContent = 'Medindo ping...';
+    const ping = await measurePing();
+    
+    resultDiv.textContent = 'Medindo velocidade de download...';
+    const downloadSpeed = await measureSpeed(true);
+    
+    resultDiv.textContent = 'Medindo velocidade de upload...';
+    const uploadSpeed = await measureSpeed(false);
+    
+    setNeedleRotation(uploadNeedle, uploadSpeed);
+    updateSpeedDisplay(uploadSpeedDisplay, uploadSpeed);
+
+    resultDiv.innerHTML = `
+      <strong>Resultados:</strong><br>
+      Ping: ${ping.toFixed(2)} ms<br>
+      Download: ${downloadSpeed.toFixed(2)} Mbps<br>
+      Upload: ${uploadSpeed.toFixed(2)} Mbps
+    `;
+  } catch (error) {
+    resultDiv.textContent = 'Erro ao realizar o teste. Por favor, tente novamente.';
+  } finally {
+    startButton.disabled = false;
+    startButton.classList.remove('pulse');
+  }
+}
+
+startButton.addEventListener('click', () => {
+  setNeedleRotation(downloadNeedle, 0);
+  setNeedleRotation(uploadNeedle, 0);
+  updateSpeedDisplay(downloadSpeedDisplay, 0);
+  updateSpeedDisplay(uploadSpeedDisplay, 0);
+  resultDiv.textContent = 'Iniciando teste completo...';
+  startButton.disabled = true;
+  startButton.classList.add('pulse');
+  runCompleteTest();
+});
+</script></body></html>
