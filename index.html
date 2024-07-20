@@ -1,281 +1,573 @@
-<html><head><base href="https://websim.ai/speedometer/"><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>WebSim Velocímetro de Internet Avançado</title><link rel="manifest" href="/manifest.json"><style>
-body {
-  font-family: 'Arial', sans-serif;
-  background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
-  color: #ffffff;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 100vh;
-  margin: 0;
-  padding: 20px;
-  box-sizing: border-box;
-}
-
-.container {
-  text-align: center;
-  background: rgba(255, 255, 255, 0.1);
-  padding: 2rem;
-  border-radius: 15px;
-  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
-  backdrop-filter: blur(4px);
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  max-width: 800px;
-  width: 100%;
-}
-
-h1 {
-  margin-bottom: 1rem;
-  font-size: 2rem;
-  text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
-}
-
-.speedometer {
-  width: 200px;
-  height: 200px;
-  border-radius: 50%;
-  background: conic-gradient(from 270deg, #4CAF50 0deg, #FFEB3B 180deg, #F44336 360deg);
-  position: relative;
-  margin: 1rem auto;
-  box-shadow: 0 0 20px rgba(0,0,0,0.3);
-}
-
-.needle {
-  position: absolute;
-  width: 100px;
-  height: 4px;
-  background: #ffffff;
-  top: 100px;
-  left: 100px;
-  transform-origin: 0% 50%;
-  transition: transform 1s cubic-bezier(0.25, 0.1, 0.25, 1);
-}
-
-.speed {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  font-size: 2rem;
-  font-weight: bold;
-  text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
-}
-
-.unit {
-  font-size: 0.8rem;
-  opacity: 0.7;
-}
-
-button {
-  background-color: #4CAF50;
-  border: none;
-  color: white;
-  padding: 15px 32px;
-  text-align: center;
-  text-decoration: none;
-  display: inline-block;
-  font-size: 16px;
-  margin: 4px 2px;
-  cursor: pointer;
-  border-radius: 25px;
-  transition: background-color 0.3s, transform 0.1s;
-  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-}
-
-button:hover {
-  background-color: #45a049;
-  transform: translateY(-2px);
-}
-
-button:active {
-  transform: translateY(1px);
-}
-
-.result {
-  margin-top: 1rem;
-  font-size: 1.2rem;
-}
-
-@keyframes pulse {
-  0% { transform: scale(1); }
-  50% { transform: scale(1.05); }
-  100% { transform: scale(1); }
-}
-
-.pulse {
-  animation: pulse 1s infinite;
-}
-
-.explanation {
-  text-align: left;
-  margin-top: 2rem;
-  padding: 1rem;
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 10px;
-}
-
-.explanation h2 {
-  margin-top: 0;
-}
-
-.speedometers {
-  display: flex;
-  justify-content: space-around;
-  flex-wrap: wrap;
-}
-
-#installButton {
-  background-color: #3498db;
-  margin-top: 1rem;
-}
-
-#installButton:hover {
-  background-color: #2980b9;
-}
-
-@media (max-width: 600px) {
-  .speedometer {
-    width: 150px;
-    height: 150px;
-  }
-  
-  .needle {
-    width: 75px;
-    top: 75px;
-    left: 75px;
-  }
-  
-  .speed {
-    font-size: 1.5rem;
-  }
-}
-</style></head><body><div class="container"><h1>WebSim Velocímetro de Internet Avançado</h1><div class="speedometers"><div><h3>Download</h3><div class="speedometer" id="downloadSpeedometer"><div class="needle"></div><div class="speed">0<span class="unit">Mbps</span></div></div></div><div><h3>Upload</h3><div class="speedometer" id="uploadSpeedometer"><div class="needle"></div><div class="speed">0<span class="unit">Mbps</span></div></div></div></div><button id="startTest">Iniciar Teste Completo</button><button id="installButton" style="display: none;">Instalar Aplicativo</button><div class="result" id="result"></div><div class="explanation"><h2>Entenda o Teste de Velocidade</h2><h3>Velocidade de Download</h3><p>A velocidade de download mede quão rápido seu dispositivo pode receber dados da internet. É importante para atividades como streaming de vídeos, baixar arquivos e navegar em sites.</p><h3>Velocidade de Upload</h3><p>A velocidade de upload mede quão rápido seu dispositivo pode enviar dados para a internet. É crucial para atividades como videoconferências, envio de arquivos grandes e jogos online.</p><h3>Ping</h3><p>O ping mede o tempo de resposta entre seu dispositivo e um servidor na internet. Um ping baixo é essencial para jogos online e aplicações em tempo real.</p><h3>Como o Teste é Realizado</h3><p>1. Download: Baixamos um arquivo de tamanho conhecido e medimos o tempo gasto.<br>2. Upload: Enviamos um arquivo de tamanho conhecido e medimos o tempo gasto.<br>3. Ping: Enviamos pequenos pacotes de dados e medimos o tempo de ida e volta.</p><p>A velocidade é calculada dividindo o tamanho do arquivo pelo tempo gasto, convertendo para Mbps (Megabits por segundo).</p></div></div><script>
-const downloadNeedle = document.querySelector('#downloadSpeedometer .needle');
-const uploadNeedle = document.querySelector('#uploadSpeedometer .needle');
-const downloadSpeedDisplay = document.querySelector('#downloadSpeedometer .speed');
-const uploadSpeedDisplay = document.querySelector('#uploadSpeedometer .speed');
-const startButton = document.getElementById('startTest');
-const resultDiv = document.getElementById('result');
-const installButton = document.getElementById('installButton');
-
-let deferredPrompt;
-
-window.addEventListener('beforeinstallprompt', (e) => {
-  e.preventDefault();
-  deferredPrompt = e;
-  installButton.style.display = 'inline-block';
-});
-
-installButton.addEventListener('click', async () => {
-  if (deferredPrompt) {
-    deferredPrompt.prompt();
-    const { outcome } = await deferredPrompt.userChoice;
-    if (outcome === 'accepted') {
-      console.log('Usuário aceitou o prompt de instalação');
-    } else {
-      console.log('Usuário recusou o prompt de instalação');
+<html><head><base href="https://versodiario.websim.ai" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VersoDiário - Seu Estudo Bíblico Diário</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/vue@3.2.31/dist/vue.global.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <link rel="manifest" href="/manifest.json">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="apple-mobile-web-app-title" content="VersoDiário">
+  <link rel="apple-touch-icon" href="/icon-192x192.png">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet">
+  <style>
+    body {
+      background-color: #f0f4f8;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     }
-    deferredPrompt = null;
-  }
-});
+    .fade-enter-active, .fade-leave-active {
+      transition: opacity 0.5s;
+    }
+    .fade-enter-from, .fade-leave-to {
+      opacity: 0;
+    }
+    .app-container {
+      background-image: url('https://source.unsplash.com/1920x1080/?nature,calm');
+      background-size: cover;
+      background-position: center;
+      background-attachment: fixed;
+    }
+    .verse-of-the-day, .content-box {
+      background-color: rgba(255, 255, 255, 0.8);
+      backdrop-filter: blur(10px);
+      border-radius: 15px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    .nav-link {
+      transition: all 0.3s ease;
+    }
+    .nav-link:hover {
+      transform: translateY(-2px);
+    }
+    .install-prompt {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background-color: #4a5568;
+      color: white;
+      padding: 10px 20px;
+      border-radius: 5px;
+      display: none;
+      z-index: 1000;
+    }
+    .search-container {
+      position: relative;
+      display: flex;
+      align-items: center;
+      transition: all 0.3s ease;
+    }
+    .search-input {
+      width: 0;
+      padding: 5px;
+      border: none;
+      border-radius: 20px;
+      outline: none;
+      transition: all 0.3s ease;
+    }
+    .search-input.active {
+      width: 200px;
+      padding: 5px 10px;
+      border: 1px solid #ccc;
+    }
+    .search-icon {
+      cursor: pointer;
+      padding: 5px;
+      transition: all 0.3s ease;
+    }
+    .highlight {
+      background-color: yellow;
+    }
+    .loading-spinner {
+      border: 4px solid #f3f3f3;
+      border-top: 4px solid #3498db;
+      border-radius: 50%;
+      width: 30px;
+      height: 30px;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    .theme-toggle {
+      cursor: pointer;
+      padding: 5px;
+      font-size: 1.5em;
+    }
+    .dark-mode {
+      background-color: #1a202c;
+      color: #e2e8f0;
+    }
+    .dark-mode .verse-of-the-day, .dark-mode .content-box {
+      background-color: rgba(26, 32, 44, 0.8);
+      color: #e2e8f0;
+    }
+    .dark-mode .nav-link {
+      color: #e2e8f0;
+    }
+    .audio-player {
+      width: 100%;
+      margin-top: 10px;
+    }
+    .verse-card {
+      transition: all 0.3s ease;
+    }
+    .verse-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+    }
+  </style>
+</head>
+<body>
+  <div id="app" class="app-container min-h-screen" :class="{ 'dark-mode': darkMode }">
+    <div class="container mx-auto px-4 py-8">
+      <header class="text-center mb-8 relative">
+        <h1 class="text-4xl font-bold text-blue-800">VersoDiário</h1>
+        <p class="text-xl text-blue-600">Seu Estudo Bíblico Diário</p>
+        <div class="absolute top-0 right-0 flex items-center">
+          <div class="theme-toggle mr-4" @click="toggleDarkMode">
+            <i :class="darkMode ? 'fas fa-sun' : 'fas fa-moon'"></i>
+          </div>
+          <div class="search-container">
+            <input 
+              type="text" 
+              v-model="searchQuery" 
+              class="search-input" 
+              :class="{ 'active': isSearchActive }"
+              @keyup.enter="performSearch"
+              placeholder="Pesquisar..."
+              ref="searchInput"
+            >
+            <i 
+              class="fas fa-search search-icon" 
+              :class="{ 'ml-4': !isSearchActive }"
+              @click="handleSearchIconClick"
+            ></i>
+          </div>
+        </div>
+      </header>
 
-function setNeedleRotation(needle, speed) {
-  const maxSpeed = 100;
-  const rotation = Math.min((speed / maxSpeed) * 180, 180);
-  needle.style.transform = `rotate(${rotation}deg)`;
-}
+      <nav class="mb-8 flex justify-center items-center">
+        <ul class="flex space-x-4">
+          <li><a href="/" class="nav-link text-blue-700 hover:text-blue-900 font-semibold px-4 py-2 rounded-full bg-white bg-opacity-70" :class="{ 'bg-blue-100': currentPage === 'home' }" @click.prevent="changePage('home')">Início</a></li>
+          <li><a href="/estudo" class="nav-link text-blue-700 hover:text-blue-900 font-semibold px-4 py-2 rounded-full bg-white bg-opacity-70" :class="{ 'bg-blue-100': currentPage === 'estudo' }" @click.prevent="changePage('estudo')">Estudo</a></li>
+          <li><a href="/favoritos" class="nav-link text-blue-700 hover:text-blue-900 font-semibold px-4 py-2 rounded-full bg-white bg-opacity-70" :class="{ 'bg-blue-100': currentPage === 'favoritos' }" @click.prevent="changePage('favoritos')">Favoritos</a></li>
+          <li><a href="/planos" class="nav-link text-blue-700 hover:text-blue-900 font-semibold px-4 py-2 rounded-full bg-white bg-opacity-70" :class="{ 'bg-blue-100': currentPage === 'planos' }" @click.prevent="changePage('planos')">Planos de Leitura</a></li>
+        </ul>
+      </nav>
 
-function updateSpeedDisplay(display, speed) {
-  display.innerHTML = `${speed.toFixed(2)}<span class="unit">Mbps</span>`;
-}
+      <transition name="fade" mode="out-in">
+        <div v-if="currentPage === 'home'" key="home" class="text-center">
+          <div class="verse-of-the-day p-8 mb-8">
+            <h2 class="text-2xl font-semibold mb-4 text-blue-800">Versículo do Dia</h2>
+            <p class="text-xl italic text-gray-800" v-if="verseOfTheDay">{{ verseOfTheDay.text }}</p>
+            <p class="text-lg mt-2 text-blue-700" v-if="verseOfTheDay">{{ verseOfTheDay.book.name }} {{ verseOfTheDay.chapter }}:{{ verseOfTheDay.number }}</p>
+            <button @click="speakVerse(verseOfTheDay)" class="mt-4 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+              <i class="fas fa-volume-up mr-2"></i>Ouvir
+            </button>
+            <button @click="shareVerse(verseOfTheDay)" class="mt-4 ml-4 bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">
+              <i class="fas fa-share mr-2"></i>Compartilhar
+            </button>
+          </div>
+          <div class="daily-devotional p-8 mb-8 bg-white bg-opacity-80 rounded-lg shadow-lg">
+            <h2 class="text-2xl font-semibold mb-4 text-blue-800">Devocional Diário</h2>
+            <p class="text-lg text-gray-800">{{ dailyDevotional }}</p>
+          </div>
+        </div>
 
-async function measurePing() {
-  const startTime = performance.now();
-  await fetch('https://www.cloudflare.com/cdn-cgi/trace');
-  const endTime = performance.now();
-  return endTime - startTime;
-}
+        <div v-else-if="currentPage === 'estudo'" key="estudo" class="content-box p-8 rounded-lg shadow-lg">
+          <h2 class="text-3xl font-bold mb-6 text-blue-800">Estudo da Bíblia</h2>
+          <div v-if="searchResults.length > 0">
+            <h3 class="text-2xl font-semibold mb-4 text-blue-800">Resultados da Pesquisa</h3>
+            <div v-for="result in searchResults" :key="`${result.version}-${result.book.abbrev.pt}-${result.chapter}-${result.number}`" class="mb-4 p-4 bg-white bg-opacity-70 rounded-lg shadow verse-card">
+              <p class="mb-2 text-gray-800">
+                <span class="font-bold">{{ result.version.toUpperCase() }} - {{ result.book.name }} {{ result.chapter }}:{{ result.number }}</span>
+                <span v-html="highlightText(result.text)"></span>
+              </p>
+              <button @click="speakVerse(result)" class="mt-2 bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-2 rounded text-sm">
+                <i class="fas fa-volume-up mr-1"></i>Ouvir
+              </button>
+              <button @click="shareVerse(result)" class="mt-2 ml-2 bg-green-500 hover:bg-green-700 text-white font-bold py-1 px-2 rounded text-sm">
+                <i class="fas fa-share mr-1"></i>Compartilhar
+              </button>
+            </div>
+          </div>
+          <div v-else>
+            <div class="mb-4">
+              <label class="block mb-2 text-blue-700">Livro:</label>
+              <select v-model="selectedBook" class="w-full p-2 border rounded" @change="loadChapters">
+                <option v-for="book in books" :value="book">{{ book.name }}</option>
+              </select>
+            </div>
+            <div class="mb-4">
+              <label class="block mb-2 text-blue-700">Capítulo:</label>
+              <select v-model="selectedChapter" class="w-full p-2 border rounded" @change="loadVerses">
+                <option v-for="chapter in chapters" :value="chapter">{{ chapter }}</option>
+              </select>
+            </div>
+            <div class="mb-4">
+              <label class="block mb-2 text-blue-700">Versão:</label>
+              <select v-model="selectedVersion" class="w-full p-2 border rounded" @change="loadVerses">
+                <option v-for="version in versions" :value="version.version">{{ version.version.toUpperCase() }}</option>
+              </select>
+            </div>
+            <div v-if="verses.length > 0" class="mt-8">
+              <h3 class="text-2xl font-semibold mb-4 text-blue-800">{{ selectedBook.name }} {{ selectedChapter }}</h3>
+              <div v-for="verse in verses" :key="verse.number" class="mb-4 p-4 bg-white bg-opacity-70 rounded-lg shadow verse-card">
+                <p class="mb-2 text-gray-800">
+                  <span class="font-bold">{{ verse.number }}</span> 
+                  <span v-html="highlightText(verse.text)"></span>
+                  <span v-if="isFavorite(verse)" class="text-yellow-500 ml-2">★</span>
+                </p>
+                <button @click="toggleVerseFavorite(verse)" class="mt-2 bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-1 px-2 rounded text-sm">
+                  <i class="fas" :class="isFavorite(verse) ? 'fa-star' : 'fa-star-o'"></i>
+                  {{ isFavorite(verse) ? 'Remover dos Favoritos' : 'Adicionar aos Favoritos' }}
+                </button>
+                <button @click="speakVerse(verse)" class="mt-2 ml-2 bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-2 rounded text-sm">
+                  <i class="fas fa-volume-up mr-1"></i>Ouvir
+                </button>
+                <button @click="shareVerse(verse)" class="mt-2 ml-2 bg-green-500 hover:bg-green-700 text-white font-bold py-1 px-2 rounded text-sm">
+                  <i class="fas fa-share mr-1"></i>Compartilhar
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
 
-async function measureSpeed(isDownload) {
-  const apiUrl = isDownload 
-    ? 'https://speed.cloudflare.com/__down?bytes=25000000'
-    : 'https://speed.cloudflare.com/__up';
-  const startTime = new Date().getTime();
-  
-  try {
-    if (isDownload) {
-      const response = await fetch(apiUrl);
-      const reader = response.body.getReader();
-      let receivedLength = 0;
+        <div v-else-if="currentPage === 'favoritos'" key="favoritos" class="content-box p-8 rounded-lg shadow-lg">
+          <h2 class="text-3xl font-bold mb-6 text-blue-800">Meus Versículos Favoritos</h2>
+          <div v-if="favoriteVerses.length === 0" class="text-center text-gray-500">
+            Você ainda não tem versículos favoritos.
+          </div>
+          <div v-else>
+            <div v-for="verse in favoriteVerses" :key="verse.id" class="mb-4 p-4 bg-white bg-opacity-70 rounded-lg shadow verse-card">
+              <p class="mb-2 text-gray-800">
+                <span class="font-bold">{{ verse.book.name }} {{ verse.chapter }}:{{ verse.number }}</span> 
+                {{ verse.text }}
+              </p>
+              <button @click="removeFavorite(verse)" class="mt-2 bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-2 rounded text-sm">
+                <i class="fas fa-trash mr-1"></i>Remover dos favoritos
+              </button>
+              <button @click="loadFullChapter(verse)" class="mt-2 ml-2 bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-2 rounded text-sm">
+                <i class="fas fa-book-open mr-1"></i>Ler capítulo completo
+              </button>
+              <button @click="speakVerse(verse)" class="mt-2 ml-2 bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-2 rounded text-sm">
+                <i class="fas fa-volume-up mr-1"></i>Ouvir
+              </button>
+              <button @click="shareVerse(verse)" class="mt-2 ml-2 bg-green-500 hover:bg-green-700 text-white font-bold py-1 px-2 rounded text-sm">
+                <i class="fas fa-share mr-1"></i>Compartilhar
+              </button>
+            </div>
+          </div>
+        </div>
 
-      while(true) {
-        const {done, value} = await reader.read();
-        if (done) break;
-        receivedLength += value.length;
-        const currentTime = new Date().getTime();
-        const elapsedTime = (currentTime - startTime) / 1000;
-        const speedMbps = (receivedLength * 8 / (1000000 * elapsedTime));
-        
-        setNeedleRotation(downloadNeedle, speedMbps);
-        updateSpeedDisplay(downloadSpeedDisplay, speedMbps);
+        <div v-else-if="currentPage === 'planos'" key="planos" class="content-box p-8 rounded-lg shadow-lg">
+          <h2 class="text-3xl font-bold mb-6 text-blue-800">Planos de Leitura</h2>
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div v-for="plan in readingPlans" :key="plan.id" class="bg-white bg-opacity-70 p-6 rounded-lg shadow-md">
+              <h3 class="text-xl font-semibold mb-2">{{ plan.name }}</h3>
+              <p class="text-gray-600 mb-4">{{ plan.description }}</p>
+              <p class="text-sm text-gray-500 mb-2">Duração: {{ plan.duration }} dias</p>
+              <button @click="startPlan(plan)" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                Começar Plano
+              </button>
+            </div>
+          </div>
+        </div>
+      </transition>
+    </div>
+  </div>
+
+  <div id="installPrompt" class="install-prompt">
+    Instale o VersoDiário no seu dispositivo!
+    <button id="installButton" class="ml-2 bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-2 rounded">
+      Instalar
+    </button>
+  </div>
+
+  <script>
+    const app = Vue.createApp({
+      data() {
+        return {
+          currentPage: 'home',
+          verseOfTheDay: null,
+          books: [],
+          selectedBook: null,
+          selectedChapter: null,
+          selectedVersion: 'nvi',
+          chapters: [],
+          verses: [],
+          favoriteVerses: [],
+          apiToken: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdHIiOiJUaHUgSnVuIDIwIDIwMjQgMTA6MTY6MjcgR01UKzAwMDAuZWxpbmFsZG9vNzE4QGdtYWlsLmNvbSIsImlhdCI6MTcxODg3ODU4N30.nJB2G1FKpa8urTO2F6FkmaJHSR2RkOAsMC-6q4FGmWU',
+          versions: [],
+          isSearchActive: false,
+          searchQuery: '',
+          searchResults: [],
+          darkMode: false,
+          dailyDevotional: '',
+          readingPlans: [
+            { id: 1, name: 'Plano de 30 Dias', description: 'Leia a Bíblia em 30 dias', duration: 30 },
+            { id: 2, name: 'Novo Testamento em 90 Dias', description: 'Foque no Novo Testamento', duration: 90 },
+            { id: 3, name: 'Salmos e Provérbios', description: 'Medite nos Salmos e Provérbios', duration: 60 },
+          ],
+        }
+      },
+      mounted() {
+        this.loadVerseOfTheDay();
+        this.loadBooks();
+        this.loadVersions();
+        this.loadFavoriteVerses();
+        this.generateDailyDevotional();
+        this.checkDarkModePreference();
+        setInterval(this.loadVerseOfTheDay, 600000); // 10 minutes
+      },
+      methods: {
+        changePage(page) {
+          this.currentPage = page;
+          if (page === 'estudo') {
+            this.searchResults = [];
+          }
+        },
+        async loadVerseOfTheDay() {
+          try {
+            const response = await axios.get('https://www.abibliadigital.com.br/api/verses/nvi/random', {
+              headers: { 'Authorization': `Bearer ${this.apiToken}` }
+            });
+            this.verseOfTheDay = response.data;
+          } catch (error) {
+            console.error('Erro ao carregar o versículo do dia:', error);
+          }
+        },
+        async loadBooks() {
+          try {
+            const response = await axios.get('https://www.abibliadigital.com.br/api/books', {
+              headers: { 'Authorization': `Bearer ${this.apiToken}` }
+            });
+            this.books = response.data;
+          } catch (error) {
+            console.error('Erro ao carregar os livros:', error);
+          }
+        },
+        async loadVersions() {
+          try {
+            const response = await axios.get('https://www.abibliadigital.com.br/api/versions', {
+              headers: { 'Authorization': `Bearer ${this.apiToken}` }
+            });
+            this.versions = response.data;
+          } catch (error) {
+            console.error('Erro ao carregar as versões:', error);
+          }
+        },
+        loadChapters() {
+          if (this.selectedBook) {
+            this.chapters = Array.from({ length: this.selectedBook.chapters }, (_, i) => i + 1);
+            this.selectedChapter = 1;
+            this.loadVerses();
+          }
+        },
+        async loadVerses() {
+          if (!this.selectedBook || !this.selectedChapter) return;
+          try {
+            const response = await axios.get(`https://www.abibliadigital.com.br/api/verses/${this.selectedVersion}/${this.selectedBook.abbrev.pt}/${this.selectedChapter}`, {
+              headers: { 'Authorization': `Bearer ${this.apiToken}` }
+            });
+            this.verses = response.data.verses;
+          } catch (error) {
+            console.error('Erro ao carregar os versículos:', error);
+          }
+        },
+        toggleVerseFavorite(verse) {
+          const index = this.favoriteVerses.findIndex(v => 
+            v.book.abbrev.pt === this.selectedBook.abbrev.pt &&
+            v.chapter === this.selectedChapter &&
+            v.number === verse.number
+          );
+          if (index === -1) {
+            this.favoriteVerses.push({
+              ...verse,
+              book: this.selectedBook,
+              chapter: this.selectedChapter,
+              version: this.selectedVersion
+            });
+          } else {
+            this.favoriteVerses.splice(index, 1);
+          }
+          this.saveFavoriteVerses();
+        },
+        isFavorite(verse) {
+          return this.favoriteVerses.some(v => 
+            v.book.abbrev.pt === this.selectedBook.abbrev.pt &&
+            v.chapter === this.selectedChapter &&
+            v.number === verse.number
+          );
+        },
+        saveFavoriteVerses() {
+          localStorage.setItem('favoriteVerses', JSON.stringify(this.favoriteVerses));
+        },
+        loadFavoriteVerses() {
+          const saved = localStorage.getItem('favoriteVerses');
+          if (saved) {
+            this.favoriteVerses = JSON.parse(saved);
+          }
+        },
+        removeFavorite(verse) {
+          const index = this.favoriteVerses.findIndex(v => 
+            v.book.abbrev.pt === verse.book.abbrev.pt &&
+            v.chapter === verse.chapter &&
+            v.number === verse.number
+          );
+          if (index !== -1) {
+            this.favoriteVerses.splice(index, 1);
+            this.saveFavoriteVerses();
+          }
+        },
+        async loadFullChapter(verse) {
+          this.selectedBook = verse.book;
+          this.selectedChapter = verse.chapter;
+          this.selectedVersion = verse.version;
+          await this.loadVerses();
+          this.changePage('estudo');
+        },
+        handleSearchIconClick() {
+          this.toggleSearch();
+          if (this.isSearchActive && this.searchQuery) {
+            this.performSearch();
+          }
+        },
+        toggleSearch() {
+          this.isSearchActive = !this.isSearchActive;
+          if (this.isSearchActive) {
+            this.$nextTick(() => {
+              this.$refs.searchInput.focus();
+            });
+          } else {
+            this.searchQuery = '';
+            this.searchResults = [];
+          }
+        },
+        async performSearch() {
+          if (!this.searchQuery) return;
+          this.searchResults = [];
+          this.changePage('estudo');
+          
+          try {
+            const searchPromises = this.versions.map(version => 
+              axios.post('https://www.abibliadigital.com.br/api/verses/search', {
+                version: version.version,
+                search: this.searchQuery
+              }, {
+                headers: { 'Authorization': `Bearer ${this.apiToken}` }
+              })
+            );
+
+            const results = await Promise.all(searchPromises);
+            
+            results.forEach((response, index) => {
+              if (response.data.verses && response.data.verses.length > 0) {
+                const versionResults = response.data.verses.map(verse => ({
+                  ...verse,
+                  version: this.versions[index].version
+                }));
+                this.searchResults.push(...versionResults);
+              }
+            });
+
+            // Sort results by relevance (you might want to implement a more sophisticated sorting algorithm)
+            this.searchResults.sort((a, b) => {
+              const aRelevance = (a.text.match(new RegExp(this.searchQuery, 'gi')) || []).length;
+              const bRelevance = (b.text.match(new RegExp(this.searchQuery, 'gi')) || []).length;
+              return bRelevance - aRelevance;
+            });
+
+          } catch (error) {
+            console.error('Erro ao realizar a pesquisa:', error);
+          }
+        },
+        highlightText(text) {
+          if (!this.searchQuery) return text;
+          const regex = new RegExp(this.searchQuery, 'gi');
+          return text.replace(regex, match => `<span class="highlight">${match}</span>`);
+        },
+        toggleDarkMode() {
+          this.darkMode = !this.darkMode;
+          localStorage.setItem('darkMode', this.darkMode);
+        },
+        checkDarkModePreference() {
+          const savedMode = localStorage.getItem('darkMode');
+          if (savedMode !== null) {
+            this.darkMode = savedMode === 'true';
+          } else {
+            this.darkMode = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+          }
+        },
+        speakVerse(verse) {
+          const speech = new SpeechSynthesisUtterance(verse.text);
+          speech.lang = 'pt-BR';
+          window.speechSynthesis.speak(speech);
+        },
+        shareVerse(verse) {
+          const text = `${verse.text} - ${verse.book.name} ${verse.chapter}:${verse.number}`;
+          if (navigator.share) {
+            navigator.share({
+              title: 'Versículo da Bíblia',
+              text: text,
+              url: window.location.href,
+            })
+              .then(() => console.log('Conteúdo compartilhado com sucesso'))
+              .catch((error) => console.log('Erro ao compartilhar', error));
+          } else {
+            // Fallback para navegadores que não suportam a Web Share API
+            prompt('Copie o texto abaixo para compartilhar:', text);
+          }
+        },
+        generateDailyDevotional() {
+          // Aqui você pode implementar a lógica para gerar um devocional diário
+          // Por enquanto, vamos usar um texto estático como exemplo
+          this.dailyDevotional = "Reflita sobre a importância de amar ao próximo como a si mesmo. Como você pode demonstrar esse amor em suas ações diárias?";
+        },
+        startPlan(plan) {
+          // Aqui você implementaria a lógica para iniciar um plano de leitura
+          alert(`Plano de leitura "${plan.name}" iniciado!`);
+          // Você pode adicionar mais lógica aqui, como salvar o progresso do usuário, etc.
+        },
       }
-    } else {
-      const data = new ArrayBuffer(25000000);
-      const response = await fetch(apiUrl, {
-        method: 'POST',
-        body: data
+    });
+
+    app.mount('#app');
+
+    // Service Worker Registration
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/service-worker.js')
+          .then((reg) => console.log('Service worker registered.', reg))
+          .catch((err) => console.log('Service worker registration failed:', err));
       });
     }
 
-    const endTime = new Date().getTime();
-    const totalTime = (endTime - startTime) / 1000;
-    const finalSpeed = isDownload 
-      ? (25000000 * 8 / (1000000 * totalTime))
-      : (25000000 * 8 / (1000000 * totalTime));
-    
-    return finalSpeed;
-  } catch (error) {
-    console.error('Erro ao medir a velocidade:', error);
-    throw error;
-  }
-}
+    // Install prompt
+    let deferredPrompt;
+    const installPrompt = document.getElementById('installPrompt');
+    const installButton = document.getElementById('installButton');
 
-async function runCompleteTest() {
-  try {
-    resultDiv.textContent = 'Medindo ping...';
-    const ping = await measurePing();
-    
-    resultDiv.textContent = 'Medindo velocidade de download...';
-    const downloadSpeed = await measureSpeed(true);
-    
-    resultDiv.textContent = 'Medindo velocidade de upload...';
-    const uploadSpeed = await measureSpeed(false);
-    
-    setNeedleRotation(uploadNeedle, uploadSpeed);
-    updateSpeedDisplay(uploadSpeedDisplay, uploadSpeed);
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      installPrompt.style.display = 'block';
+    });
 
-    resultDiv.innerHTML = `
-      <strong>Resultados:</strong><br>
-      Ping: ${ping.toFixed(2)} ms<br>
-      Download: ${downloadSpeed.toFixed(2)} Mbps<br>
-      Upload: ${uploadSpeed.toFixed(2)} Mbps
-    `;
-  } catch (error) {
-    resultDiv.textContent = 'Erro ao realizar o teste. Por favor, tente novamente.';
-  } finally {
-    startButton.disabled = false;
-    startButton.classList.remove('pulse');
-  }
-}
-
-startButton.addEventListener('click', () => {
-  setNeedleRotation(downloadNeedle, 0);
-  setNeedleRotation(uploadNeedle, 0);
-  updateSpeedDisplay(downloadSpeedDisplay, 0);
-  updateSpeedDisplay(uploadSpeedDisplay, 0);
-  resultDiv.textContent = 'Iniciando teste completo...';
-  startButton.disabled = true;
-  startButton.classList.add('pulse');
-  runCompleteTest();
-});
-</script></body></html>
+    installButton.addEventListener('click', (e) => {
+      installPrompt.style.display = 'none';
+      deferredPrompt.prompt();
+      deferredPrompt.userChoice.then((choiceResult) => {
+        if (choiceResult.outcome === 'accepted') {
+          console.log('User accepted the install prompt');
+        } else {
+          console.log('User dismissed the install prompt');
+        }
+        deferredPrompt = null;
+      });
+    });
+  </script>
+</body></html>
