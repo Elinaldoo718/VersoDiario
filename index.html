@@ -517,4 +517,23 @@
 
             if (screenWidth <= 320) {
                 iconSize = 24;
-            } else if (s
+            } else if (screenWidth <= 375) {
+                iconSize = 28;
+            } else if (screenWidth <= 425) {
+                iconSize = 32;
+            } else {
+                iconSize = 36;
+            }
+
+            icons.forEach(icon => {
+                icon.width = iconSize;
+                icon.height = iconSize;
+            });
+        }
+
+        // Chama a função de ajuste ao carregar a página e ao redimensionar a janela
+        window.addEventListener('load', adjustIconSize);
+        window.addEventListener('resize', adjustIconSize);
+    </script>
+</body>
+</html>
