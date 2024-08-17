@@ -11,6 +11,7 @@
             --accent-color: #f1c40f;
             --error-color: #e74c3c;
             --highlight-color: #ffff00;
+            --font-size: 16px;
         }
         
         body {
@@ -20,6 +21,7 @@
             background-color: var(--background-color);
             color: var(--text-color);
             line-height: 1.6;
+            font-size: var(--font-size);
         }
         
         .container {
@@ -112,7 +114,7 @@
         }
         
         #verseDisplay, #randomVerseDisplay, #searchResults {
-            font-size: 16px;
+            font-size: var(--font-size);
             line-height: 1.6;
             margin-top: 15px;
             padding: 15px;
@@ -125,7 +127,7 @@
             display: none;
             text-align: center;
             margin-top: 15px;
-            font-size: 16px;
+            font-size: var(--font-size);
             color: var(--secondary-color);
         }
         
@@ -186,6 +188,54 @@
             display: none;
         }
         
+        #fontSizeControl {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: var(--primary-color);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+        
+        #fontSizeControl:hover {
+            transform: scale(1.1);
+        }
+        
+        #fontSizeControl img {
+            width: 24px;
+            height: 24px;
+        }
+        
+        #fontSizeMenu {
+            position: fixed;
+            bottom: 70px;
+            right: 20px;
+            background-color: white;
+            border-radius: 8px;
+            padding: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            display: none;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        #fontSizeMenu button {
+            width: 30px;
+            height: 30px;
+            font-size: 16px;
+            margin: 5px 0;
+            padding: 0;
+            line-height: 1;
+        }
+        
         @media (max-width: 768px) {
             .nav-icon {
                 padding: 6px;
@@ -204,11 +254,6 @@
             
             h1 {
                 font-size: 20px;
-            }
-            
-            #verseDisplay, #randomVerseDisplay, #searchResults {
-                font-size: 14px;
-                padding: 10px;
             }
         }
         
@@ -233,11 +278,6 @@
             input, select, button {
                 font-size: 12px;
                 padding: 6px;
-            }
-            
-            #verseDisplay, #randomVerseDisplay, #searchResults {
-                font-size: 12px;
-                padding: 8px;
             }
         }
     </style>
@@ -300,6 +340,7 @@
                     <li>Pesquisa por palavras-chave ou frases</li>
                     <li>Versículo aleatório para reflexão</li>
                     <li>Múltiplas versões da Bíblia</li>
+                    <li>Ajuste do tamanho da fonte para melhor leitura</li>
                 </ul>
                 <p>Que esta ferramenta possa enriquecer seu conhecimento e fortalecer sua fé.</p>
             </section>
@@ -308,12 +349,22 @@
 
     <div class="loading">Carregando sua experiência espiritual</div>
 
+    <div id="fontSizeControl" onclick="toggleFontSizeMenu()">
+        <img src="https://img.icons8.com/material-outlined/24/ffffff/font-size.png" alt="Ajustar tamanho da fonte">
+    </div>
+    <div id="fontSizeMenu">
+        <button onclick="changeFontSize(1)">A+</button>
+        <span id="currentFontSize">16px</span>
+        <button onclick="changeFontSize(-1)">A-</button>
+    </div>
+
     <script>
         const API_BASE_URL = 'https://www.abibliadigital.com.br/api';
         const API_TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdHIiOiJUaHUgSnVuIDIwIDIwMjQgMTA6MTY6MjcgR01UKzAwMDAuZWxpbmFsZG9vNzE4QGdtYWlsLmNvbSIsImlhdCI6MTcxODg3ODU4N30.nJB2G1FKpa8urTO2F6FkmaJHSR2RkOAsMC-6q4FGmWU';
 
         let currentVersion = 'nvi';
         let lastSearchTerm = '';
+        let currentFontSize = 16;
 
         async function fetchVersions() {
             showLoading();
@@ -485,6 +536,17 @@
             errorElement.style.display = 'none';
         }
 
+        function changeFontSize(delta) {
+            currentFontSize = Math.max(12, Math.min(24, currentFontSize + delta));
+            document.documentElement.style.setProperty('--font-size', `${currentFontSize}px`);
+            document.getElementById('currentFontSize').textContent = `${currentFontSize}px`;
+        }
+
+        function toggleFontSizeMenu() {
+            const menu = document.getElementById('fontSizeMenu');
+            menu.style.display = menu.style.display === 'flex' ? 'none' : 'flex';
+        }
+
         // Inicializa a aplicação
         fetchVersions();
         fetchBooks();
@@ -534,6 +596,15 @@
         // Chama a função de ajuste ao carregar a página e ao redimensionar a janela
         window.addEventListener('load', adjustIconSize);
         window.addEventListener('resize', adjustIconSize);
+
+        // Fecha o menu de tamanho de fonte ao clicar fora dele
+        document.addEventListener('click', function(event) {
+            const fontSizeControl = document.getElementById('fontSizeControl');
+            const fontSizeMenu = document.getElementById('fontSizeMenu');
+            if (!fontSizeControl.contains(event.target) && !fontSizeMenu.contains(event.target)) {
+                fontSizeMenu.style.display = 'none';
+            }
+        });
     </script>
 </body>
 </html>
