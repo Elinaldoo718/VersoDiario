@@ -9,6 +9,8 @@
             --background-color: #e8f5e9;
             --text-color: #1a5e1a;
             --accent-color: #f1c40f;
+            --error-color: #e74c3c;
+            --highlight-color: #ffff00;
         }
         
         body {
@@ -158,7 +160,7 @@
         }
         
         .highlight {
-            background-color: var(--accent-color);
+            background-color: var(--highlight-color);
             padding: 2px 4px;
             border-radius: 4px;
         }
@@ -166,6 +168,22 @@
         .verse-reference {
             font-weight: bold;
             color: var(--secondary-color);
+            cursor: pointer;
+        }
+        
+        .verse-reference:hover {
+            text-decoration: underline;
+        }
+        
+        .error-message {
+            color: var(--error-color);
+            background-color: #fde9e8;
+            border-left: 4px solid var(--error-color);
+            padding: 10px;
+            margin-top: 10px;
+            border-radius: 4px;
+            font-size: 14px;
+            display: none;
         }
         
         @media (max-width: 768px) {
@@ -240,12 +258,16 @@
         <div class="container">
             <section id="books" class="content-section">
                 <h1>Explorar Livros da Bíblia</h1>
+                <select id="versionSelect">
+                    <option value="">Selecione uma versão</option>
+                </select>
                 <select id="bookSelect">
                     <option value="">Selecione um livro</option>
                 </select>
                 <input type="number" id="chapterInput" placeholder="Capítulo" min="1">
                 <button onclick="fetchChapter()">Ler Capítulo</button>
                 <div id="verseDisplay"></div>
+                <div id="booksError" class="error-message"></div>
             </section>
 
             <section id="search" class="content-section" style="display:none;">
@@ -253,17 +275,20 @@
                 <input type="text" id="searchInput" placeholder="Digite sua pesquisa">
                 <button onclick="searchVerses()">Pesquisar</button>
                 <div id="searchResults"></div>
+                <div id="searchError" class="error-message"></div>
             </section>
 
             <section id="random" class="content-section" style="display:none;">
                 <h1>Versículo Aleatório para Reflexão</h1>
                 <button onclick="fetchRandomVerse()">Gerar Versículo</button>
                 <div id="randomVerseDisplay"></div>
+                <div id="randomError" class="error-message"></div>
             </section>
 
             <section id="versions" class="content-section" style="display:none;">
                 <h1>Versões da Bíblia Disponíveis</h1>
                 <div id="versionsList"></div>
+                <div id="versionsError" class="error-message"></div>
             </section>
 
             <section id="about" class="content-section" style="display:none;">
@@ -287,6 +312,33 @@
         const API_BASE_URL = 'https://www.abibliadigital.com.br/api';
         const API_TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdHIiOiJUaHUgSnVuIDIwIDIwMjQgMTA6MTY6MjcgR01UKzAwMDAuZWxpbmFsZG9vNzE4QGdtYWlsLmNvbSIsImlhdCI6MTcxODg3ODU4N30.nJB2G1FKpa8urTO2F6FkmaJHSR2RkOAsMC-6q4FGmWU';
 
+        let currentVersion = 'nvi';
+        let lastSearchTerm = '';
+
+        async function fetchVersions() {
+            showLoading();
+            try {
+                const response = await fetch(`${API_BASE_URL}/versions`, {
+                    headers: { 'Authorization': `Bearer ${API_TOKEN}` }
+                });
+                const versions = await response.json();
+                const versionSelect = document.getElementById('versionSelect');
+                versionSelect.innerHTML = '<option value="">Selecione uma versão</option>';
+                versions.forEach(version => {
+                    const option = document.createElement('option');
+                    option.value = version.version;
+                    option.textContent = `${version.version} - ${version.name}`;
+                    versionSelect.appendChild(option);
+                });
+                versionSelect.value = currentVersion;
+            } catch (error) {
+                console.error('Erro ao buscar versões:', error);
+                showError('versionsError', 'Não foi possível carregar as versões da Bíblia. Por favor, tente novamente mais tarde.');
+            } finally {
+                hideLoading();
+            }
+        }
+
         async function fetchBooks() {
             try {
                 const response = await fetch(`${API_BASE_URL}/books`, {
@@ -294,6 +346,7 @@
                 });
                 const books = await response.json();
                 const select = document.getElementById('bookSelect');
+                select.innerHTML = '<option value="">Selecione um livro</option>';
                 books.forEach(book => {
                     const option = document.createElement('option');
                     option.value = book.abbrev.pt;
@@ -302,31 +355,41 @@
                 });
             } catch (error) {
                 console.error('Erro ao buscar livros:', error);
-                showError('Não foi possível carregar a lista de livros. Por favor, tente novamente mais tarde.');
+                showError('booksError', 'Não foi possível carregar a lista de livros. Por favor, tente novamente mais tarde.');
             }
         }
 
-        async function fetchChapter() {
-            const book = document.getElementById('bookSelect').value;
-            const chapter = document.getElementById('chapterInput').value;
+        async function fetchChapter(book, chapter, highlightVerse) {
             if (!book || !chapter) {
-                showError('Por favor, selecione um livro e um capítulo.');
+                book = document.getElementById('bookSelect').value;
+                chapter = document.getElementById('chapterInput').value;
+            }
+            if (!book || !chapter) {
+                showError('booksError', 'Por favor, selecione um livro e um capítulo.');
                 return;
             }
             showLoading();
             try {
-                const response = await fetch(`${API_BASE_URL}/verses/nvi/${book}/${chapter}`, {
+                const response = await fetch(`${API_BASE_URL}/verses/${currentVersion}/${book}/${chapter}`, {
                     headers: { 'Authorization': `Bearer ${API_TOKEN}` }
                 });
                 const data = await response.json();
                 const verseDisplay = document.getElementById('verseDisplay');
-                verseDisplay.innerHTML = `<h2>${data.book.name} - Capítulo ${data.chapter.number}</h2>`;
+                verseDisplay.innerHTML = `<h2>${data.book.name} - Capítulo ${data.chapter.number} (${currentVersion.toUpperCase()})</h2>`;
                 verseDisplay.innerHTML += data.verses.map(verse => 
-                    `<p><span class="verse-reference">${verse.number}.</span> ${verse.text}</p>`
+                    `<p><span class="verse-reference">${verse.number}.</span> ${highlightVerse === verse.number ? highlightSearchTerm(verse.text, lastSearchTerm) : verse.text}</p>`
                 ).join('');
+                hideError('booksError');
+                showSection('books');
+                if (highlightVerse) {
+                    const highlightedVerse = verseDisplay.querySelector(`p:nth-child(${highlightVerse})`);
+                    if (highlightedVerse) {
+                        highlightedVerse.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
+                }
             } catch (error) {
                 console.error('Erro ao buscar capítulo:', error);
-                showError('Não foi possível carregar o capítulo. Por favor, verifique sua conexão e tente novamente.');
+                showError('booksError', 'Não foi possível carregar o capítulo. Por favor, verifique sua conexão e tente novamente.');
             } finally {
                 hideLoading();
             }
@@ -335,7 +398,7 @@
         async function searchVerses() {
             const searchTerm = document.getElementById('searchInput').value;
             if (!searchTerm) {
-                showError('Por favor, digite um termo para pesquisar.');
+                showError('searchError', 'Por favor, digite um termo para pesquisar.');
                 return;
             }
             showLoading();
@@ -346,20 +409,22 @@
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${API_TOKEN}`
                     },
-                    body: JSON.stringify({ version: 'nvi', search: searchTerm })
+                    body: JSON.stringify({ version: currentVersion, search: searchTerm })
                 });
                 const data = await response.json();
                 const searchResults = document.getElementById('searchResults');
                 if (data.verses && data.verses.length > 0) {
                     searchResults.innerHTML = data.verses.map(verse => 
-                        `<p><span class="verse-reference">${verse.book.name} ${verse.chapter}:${verse.number}</span> - ${highlightSearchTerm(verse.text, searchTerm)}</p>`
+                        `<p><span class="verse-reference" onclick="fetchChapter('${verse.book.abbrev.pt}', ${verse.chapter}, ${verse.number})">${verse.book.name} ${verse.chapter}:${verse.number} (${currentVersion.toUpperCase()})</span> - ${highlightSearchTerm(verse.text, searchTerm)}</p>`
                     ).join('');
+                    hideError('searchError');
+                    lastSearchTerm = searchTerm;
                 } else {
                     searchResults.innerHTML = '<p>Nenhum resultado encontrado para sua pesquisa.</p>';
                 }
             } catch (error) {
                 console.error('Erro na pesquisa:', error);
-                showError('Ocorreu um erro durante a pesquisa. Por favor, tente novamente.');
+                showError('searchError', 'Ocorreu um erro durante a pesquisa. Por favor, tente novamente.');
             } finally {
                 hideLoading();
             }
@@ -373,37 +438,19 @@
         async function fetchRandomVerse() {
             showLoading();
             try {
-                const response = await fetch(`${API_BASE_URL}/verses/nvi/random`, {
+                const response = await fetch(`${API_BASE_URL}/verses/${currentVersion}/random`, {
                     headers: { 'Authorization': `Bearer ${API_TOKEN}` }
                 });
                 const data = await response.json();
                 const randomVerseDisplay = document.getElementById('randomVerseDisplay');
                 randomVerseDisplay.innerHTML = `
-                    <p><span class="verse-reference">${data.book.name} ${data.chapter}:${data.number}</span></p>
+                    <p><span class="verse-reference">${data.book.name} ${data.chapter}:${data.number} (${currentVersion.toUpperCase()})</span></p>
                     <p>${data.text}</p>
                 `;
+                hideError('randomError');
             } catch (error) {
                 console.error('Erro ao buscar versículo aleatório:', error);
-                showError('Não foi possível carregar um versículo aleatório. Por favor, tente novamente.');
-            } finally {
-                hideLoading();
-            }
-        }
-
-        async function fetchVersions() {
-            showLoading();
-            try {
-                const response = await fetch(`${API_BASE_URL}/versions`, {
-                    headers: { 'Authorization': `Bearer ${API_TOKEN}` }
-                });
-                const versions = await response.json();
-                const versionsList = document.getElementById('versionsList');
-                versionsList.innerHTML = versions.map(version => 
-                    `<p><strong>${version.version}</strong> - ${version.verses} versículos</p>`
-                ).join('');
-            } catch (error) {
-                console.error('Erro ao buscar versões:', error);
-                showError('Não foi possível carregar as versões da Bíblia. Por favor, tente novamente mais tarde.');
+                showError('randomError', 'Não foi possível carregar um versículo aleatório. Por favor, tente novamente.');
             } finally {
                 hideLoading();
             }
@@ -427,11 +474,19 @@
             document.querySelector('.loading').style.display = 'none';
         }
 
-        function showError(message) {
-            alert(message);
+        function showError(elementId, message) {
+            const errorElement = document.getElementById(elementId);
+            errorElement.textContent = message;
+            errorElement.style.display = 'block';
+        }
+
+        function hideError(elementId) {
+            const errorElement = document.getElementById(elementId);
+            errorElement.style.display = 'none';
         }
 
         // Inicializa a aplicação
+        fetchVersions();
         fetchBooks();
 
         // Adiciona funcionalidade de pesquisa ao pressionar Enter
@@ -442,9 +497,15 @@
         });
 
         // Melhora a experiência do usuário ao navegar entre capítulos
-        document.getElementById('chapterInput').addEventListener('change', fetchChapter);
+        document.getElementById('chapterInput').addEventListener('change', () => fetchChapter());
         document.getElementById('bookSelect').addEventListener('change', function() {
             document.getElementById('chapterInput').value = '1';
+            fetchChapter();
+        });
+
+        // Atualiza a versão selecionada
+        document.getElementById('versionSelect').addEventListener('change', function() {
+            currentVersion = this.value;
             fetchChapter();
         });
 
@@ -456,23 +517,4 @@
 
             if (screenWidth <= 320) {
                 iconSize = 24;
-            } else if (screenWidth <= 375) {
-                iconSize = 28;
-            } else if (screenWidth <= 425) {
-                iconSize = 32;
-            } else {
-                iconSize = 36;
-            }
-
-            icons.forEach(icon => {
-                icon.width = iconSize;
-                icon.height = iconSize;
-            });
-        }
-
-        // Chama a função de ajuste ao carregar a página e ao redimensionar a janela
-        window.addEventListener('load', adjustIconSize);
-        window.addEventListener('resize', adjustIconSize);
-    </script>
-</body>
-</html>
+            } else if (s
