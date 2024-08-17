@@ -1,573 +1,478 @@
-<html><head><base href="https://versodiario.websim.ai" />
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>VersoDiário - Seu Estudo Bíblico Diário</title>
-  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/vue@3.2.31/dist/vue.global.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-  <link rel="manifest" href="/manifest.json">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black">
-  <meta name="apple-mobile-web-app-title" content="VersoDiário">
-  <link rel="apple-touch-icon" href="/icon-192x192.png">
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet">
-  <style>
-    body {
-      background-color: #f0f4f8;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    }
-    .fade-enter-active, .fade-leave-active {
-      transition: opacity 0.5s;
-    }
-    .fade-enter-from, .fade-leave-to {
-      opacity: 0;
-    }
-    .app-container {
-      background-image: url('https://source.unsplash.com/1920x1080/?nature,calm');
-      background-size: cover;
-      background-position: center;
-      background-attachment: fixed;
-    }
-    .verse-of-the-day, .content-box {
-      background-color: rgba(255, 255, 255, 0.8);
-      backdrop-filter: blur(10px);
-      border-radius: 15px;
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    }
-    .nav-link {
-      transition: all 0.3s ease;
-    }
-    .nav-link:hover {
-      transform: translateY(-2px);
-    }
-    .install-prompt {
-      position: fixed;
-      bottom: 20px;
-      left: 50%;
-      transform: translateX(-50%);
-      background-color: #4a5568;
-      color: white;
-      padding: 10px 20px;
-      border-radius: 5px;
-      display: none;
-      z-index: 1000;
-    }
-    .search-container {
-      position: relative;
-      display: flex;
-      align-items: center;
-      transition: all 0.3s ease;
-    }
-    .search-input {
-      width: 0;
-      padding: 5px;
-      border: none;
-      border-radius: 20px;
-      outline: none;
-      transition: all 0.3s ease;
-    }
-    .search-input.active {
-      width: 200px;
-      padding: 5px 10px;
-      border: 1px solid #ccc;
-    }
-    .search-icon {
-      cursor: pointer;
-      padding: 5px;
-      transition: all 0.3s ease;
-    }
-    .highlight {
-      background-color: yellow;
-    }
-    .loading-spinner {
-      border: 4px solid #f3f3f3;
-      border-top: 4px solid #3498db;
-      border-radius: 50%;
-      width: 30px;
-      height: 30px;
-      animation: spin 1s linear infinite;
-    }
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
-    .theme-toggle {
-      cursor: pointer;
-      padding: 5px;
-      font-size: 1.5em;
-    }
-    .dark-mode {
-      background-color: #1a202c;
-      color: #e2e8f0;
-    }
-    .dark-mode .verse-of-the-day, .dark-mode .content-box {
-      background-color: rgba(26, 32, 44, 0.8);
-      color: #e2e8f0;
-    }
-    .dark-mode .nav-link {
-      color: #e2e8f0;
-    }
-    .audio-player {
-      width: 100%;
-      margin-top: 10px;
-    }
-    .verse-card {
-      transition: all 0.3s ease;
-    }
-    .verse-card:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
-    }
-  </style>
+<html><head><base href="https://biblia.digital/">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Estudo Bíblico Digital</title>
+    <style>
+        :root {
+            --primary-color: #2ecc71;
+            --secondary-color: #27ae60;
+            --background-color: #e8f5e9;
+            --text-color: #1a5e1a;
+            --accent-color: #f1c40f;
+        }
+        
+        body {
+            font-family: 'Roboto', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            background-color: var(--primary-color);
+            padding: 10px 0;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        
+        nav {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        
+        .nav-icon {
+            cursor: pointer;
+            transition: all 0.3s ease;
+            padding: 8px;
+            border-radius: 50%;
+            margin: 5px;
+        }
+        
+        .nav-icon:hover {
+            background-color: var(--secondary-color);
+            transform: translateY(-3px);
+        }
+        
+        main {
+            padding: 20px 10px;
+        }
+        
+        .content-section {
+            background-color: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 6px 12px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+        
+        .content-section:hover {
+            transform: translateY(-5px);
+        }
+        
+        h1, h2 {
+            color: var(--secondary-color);
+            margin-bottom: 15px;
+        }
+        
+        input, select, button {
+            margin: 8px 0;
+            padding: 10px;
+            border: 2px solid #bdc3c7;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            width: 100%;
+            max-width: 300px;
+        }
+        
+        input:focus, select:focus {
+            border-color: var(--primary-color);
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(46, 204, 113, 0.2);
+        }
+        
+        button {
+            background-color: var(--primary-color);
+            color: white;
+            cursor: pointer;
+            font-weight: bold;
+            border: none;
+            transition: all 0.3s ease;
+        }
+        
+        button:hover {
+            background-color: var(--secondary-color);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        
+        #verseDisplay, #randomVerseDisplay, #searchResults {
+            font-size: 16px;
+            line-height: 1.6;
+            margin-top: 15px;
+            padding: 15px;
+            background-color: #f9f9f9;
+            border-radius: 8px;
+            border-left: 4px solid var(--accent-color);
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            margin-top: 15px;
+            font-size: 16px;
+            color: var(--secondary-color);
+        }
+        
+        .loading:after {
+            content: '.';
+            animation: dots 1.5s steps(5, end) infinite;
+        }
+        
+        @keyframes dots {
+            0%, 20% {
+                color: rgba(0,0,0,0);
+                text-shadow:
+                    .25em 0 0 rgba(0,0,0,0),
+                    .5em 0 0 rgba(0,0,0,0);
+            }
+            40% {
+                color: var(--text-color);
+                text-shadow:
+                    .25em 0 0 rgba(0,0,0,0),
+                    .5em 0 0 rgba(0,0,0,0);
+            }
+            60% {
+                text-shadow:
+                    .25em 0 0 var(--text-color),
+                    .5em 0 0 rgba(0,0,0,0);
+            }
+            80%, 100% {
+                text-shadow:
+                    .25em 0 0 var(--text-color),
+                    .5em 0 0 var(--text-color);
+            }
+        }
+        
+        .highlight {
+            background-color: var(--accent-color);
+            padding: 2px 4px;
+            border-radius: 4px;
+        }
+        
+        .verse-reference {
+            font-weight: bold;
+            color: var(--secondary-color);
+        }
+        
+        @media (max-width: 768px) {
+            .nav-icon {
+                padding: 6px;
+            }
+            
+            .content-section {
+                padding: 15px;
+            }
+            
+            input, select, button {
+                width: 100%;
+                max-width: none;
+                font-size: 14px;
+                padding: 8px;
+            }
+            
+            h1 {
+                font-size: 20px;
+            }
+            
+            #verseDisplay, #randomVerseDisplay, #searchResults {
+                font-size: 14px;
+                padding: 10px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            nav {
+                justify-content: space-between;
+            }
+            
+            .nav-icon {
+                padding: 5px;
+                margin: 3px;
+            }
+            
+            h1 {
+                font-size: 18px;
+            }
+            
+            .content-section {
+                padding: 12px;
+            }
+            
+            input, select, button {
+                font-size: 12px;
+                padding: 6px;
+            }
+            
+            #verseDisplay, #randomVerseDisplay, #searchResults {
+                font-size: 12px;
+                padding: 8px;
+            }
+        }
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
 </head>
 <body>
-  <div id="app" class="app-container min-h-screen" :class="{ 'dark-mode': darkMode }">
-    <div class="container mx-auto px-4 py-8">
-      <header class="text-center mb-8 relative">
-        <h1 class="text-4xl font-bold text-blue-800">VersoDiário</h1>
-        <p class="text-xl text-blue-600">Seu Estudo Bíblico Diário</p>
-        <div class="absolute top-0 right-0 flex items-center">
-          <div class="theme-toggle mr-4" @click="toggleDarkMode">
-            <i :class="darkMode ? 'fas fa-sun' : 'fas fa-moon'"></i>
-          </div>
-          <div class="search-container">
-            <input 
-              type="text" 
-              v-model="searchQuery" 
-              class="search-input" 
-              :class="{ 'active': isSearchActive }"
-              @keyup.enter="performSearch"
-              placeholder="Pesquisar..."
-              ref="searchInput"
-            >
-            <i 
-              class="fas fa-search search-icon" 
-              :class="{ 'ml-4': !isSearchActive }"
-              @click="handleSearchIconClick"
-            ></i>
-          </div>
+    <header>
+        <nav>
+            <img src="https://img.icons8.com/color/48/holy-bible.png" class="nav-icon" onclick="showSection('books')" alt="Ícone da Bíblia" width="36" height="36">
+            <img src="https://img.icons8.com/color/48/search--v1.png" class="nav-icon" onclick="showSection('search')" alt="Ícone de lupa" width="36" height="36">
+            <img src="https://img.icons8.com/color/48/dice.png" class="nav-icon" onclick="showSection('random')" alt="Ícone de dado" width="36" height="36">
+            <img src="https://img.icons8.com/color/48/translation.png" class="nav-icon" onclick="showSection('versions')" alt="Ícone de tradução" width="36" height="36">
+            <img src="https://img.icons8.com/color/48/about.png" class="nav-icon" onclick="showSection('about')" alt="Ícone de informação" width="36" height="36">
+        </nav>
+    </header>
+
+    <main>
+        <div class="container">
+            <section id="books" class="content-section">
+                <h1>Explorar Livros da Bíblia</h1>
+                <select id="bookSelect">
+                    <option value="">Selecione um livro</option>
+                </select>
+                <input type="number" id="chapterInput" placeholder="Capítulo" min="1">
+                <button onclick="fetchChapter()">Ler Capítulo</button>
+                <div id="verseDisplay"></div>
+            </section>
+
+            <section id="search" class="content-section" style="display:none;">
+                <h1>Pesquisar na Bíblia</h1>
+                <input type="text" id="searchInput" placeholder="Digite sua pesquisa">
+                <button onclick="searchVerses()">Pesquisar</button>
+                <div id="searchResults"></div>
+            </section>
+
+            <section id="random" class="content-section" style="display:none;">
+                <h1>Versículo Aleatório para Reflexão</h1>
+                <button onclick="fetchRandomVerse()">Gerar Versículo</button>
+                <div id="randomVerseDisplay"></div>
+            </section>
+
+            <section id="versions" class="content-section" style="display:none;">
+                <h1>Versões da Bíblia Disponíveis</h1>
+                <div id="versionsList"></div>
+            </section>
+
+            <section id="about" class="content-section" style="display:none;">
+                <h1>Sobre o Estudo Bíblico Digital</h1>
+                <p>Bem-vindo ao seu companheiro de estudo bíblico digital! Esta aplicação foi desenvolvida para facilitar sua jornada espiritual, oferecendo acesso rápido aos textos sagrados, funcionalidades de pesquisa avançada e versículos aleatórios para inspiração diária.</p>
+                <p>Recursos principais:</p>
+                <ul>
+                    <li>Acesso a todos os livros da Bíblia</li>
+                    <li>Pesquisa por palavras-chave ou frases</li>
+                    <li>Versículo aleatório para reflexão</li>
+                    <li>Múltiplas versões da Bíblia</li>
+                </ul>
+                <p>Que esta ferramenta possa enriquecer seu conhecimento e fortalecer sua fé.</p>
+            </section>
         </div>
-      </header>
+    </main>
 
-      <nav class="mb-8 flex justify-center items-center">
-        <ul class="flex space-x-4">
-          <li><a href="/" class="nav-link text-blue-700 hover:text-blue-900 font-semibold px-4 py-2 rounded-full bg-white bg-opacity-70" :class="{ 'bg-blue-100': currentPage === 'home' }" @click.prevent="changePage('home')">Início</a></li>
-          <li><a href="/estudo" class="nav-link text-blue-700 hover:text-blue-900 font-semibold px-4 py-2 rounded-full bg-white bg-opacity-70" :class="{ 'bg-blue-100': currentPage === 'estudo' }" @click.prevent="changePage('estudo')">Estudo</a></li>
-          <li><a href="/favoritos" class="nav-link text-blue-700 hover:text-blue-900 font-semibold px-4 py-2 rounded-full bg-white bg-opacity-70" :class="{ 'bg-blue-100': currentPage === 'favoritos' }" @click.prevent="changePage('favoritos')">Favoritos</a></li>
-          <li><a href="/planos" class="nav-link text-blue-700 hover:text-blue-900 font-semibold px-4 py-2 rounded-full bg-white bg-opacity-70" :class="{ 'bg-blue-100': currentPage === 'planos' }" @click.prevent="changePage('planos')">Planos de Leitura</a></li>
-        </ul>
-      </nav>
+    <div class="loading">Carregando sua experiência espiritual</div>
 
-      <transition name="fade" mode="out-in">
-        <div v-if="currentPage === 'home'" key="home" class="text-center">
-          <div class="verse-of-the-day p-8 mb-8">
-            <h2 class="text-2xl font-semibold mb-4 text-blue-800">Versículo do Dia</h2>
-            <p class="text-xl italic text-gray-800" v-if="verseOfTheDay">{{ verseOfTheDay.text }}</p>
-            <p class="text-lg mt-2 text-blue-700" v-if="verseOfTheDay">{{ verseOfTheDay.book.name }} {{ verseOfTheDay.chapter }}:{{ verseOfTheDay.number }}</p>
-            <button @click="speakVerse(verseOfTheDay)" class="mt-4 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-              <i class="fas fa-volume-up mr-2"></i>Ouvir
-            </button>
-            <button @click="shareVerse(verseOfTheDay)" class="mt-4 ml-4 bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">
-              <i class="fas fa-share mr-2"></i>Compartilhar
-            </button>
-          </div>
-          <div class="daily-devotional p-8 mb-8 bg-white bg-opacity-80 rounded-lg shadow-lg">
-            <h2 class="text-2xl font-semibold mb-4 text-blue-800">Devocional Diário</h2>
-            <p class="text-lg text-gray-800">{{ dailyDevotional }}</p>
-          </div>
-        </div>
+    <script>
+        const API_BASE_URL = 'https://www.abibliadigital.com.br/api';
+        const API_TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdHIiOiJUaHUgSnVuIDIwIDIwMjQgMTA6MTY6MjcgR01UKzAwMDAuZWxpbmFsZG9vNzE4QGdtYWlsLmNvbSIsImlhdCI6MTcxODg3ODU4N30.nJB2G1FKpa8urTO2F6FkmaJHSR2RkOAsMC-6q4FGmWU';
 
-        <div v-else-if="currentPage === 'estudo'" key="estudo" class="content-box p-8 rounded-lg shadow-lg">
-          <h2 class="text-3xl font-bold mb-6 text-blue-800">Estudo da Bíblia</h2>
-          <div v-if="searchResults.length > 0">
-            <h3 class="text-2xl font-semibold mb-4 text-blue-800">Resultados da Pesquisa</h3>
-            <div v-for="result in searchResults" :key="`${result.version}-${result.book.abbrev.pt}-${result.chapter}-${result.number}`" class="mb-4 p-4 bg-white bg-opacity-70 rounded-lg shadow verse-card">
-              <p class="mb-2 text-gray-800">
-                <span class="font-bold">{{ result.version.toUpperCase() }} - {{ result.book.name }} {{ result.chapter }}:{{ result.number }}</span>
-                <span v-html="highlightText(result.text)"></span>
-              </p>
-              <button @click="speakVerse(result)" class="mt-2 bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-2 rounded text-sm">
-                <i class="fas fa-volume-up mr-1"></i>Ouvir
-              </button>
-              <button @click="shareVerse(result)" class="mt-2 ml-2 bg-green-500 hover:bg-green-700 text-white font-bold py-1 px-2 rounded text-sm">
-                <i class="fas fa-share mr-1"></i>Compartilhar
-              </button>
-            </div>
-          </div>
-          <div v-else>
-            <div class="mb-4">
-              <label class="block mb-2 text-blue-700">Livro:</label>
-              <select v-model="selectedBook" class="w-full p-2 border rounded" @change="loadChapters">
-                <option v-for="book in books" :value="book">{{ book.name }}</option>
-              </select>
-            </div>
-            <div class="mb-4">
-              <label class="block mb-2 text-blue-700">Capítulo:</label>
-              <select v-model="selectedChapter" class="w-full p-2 border rounded" @change="loadVerses">
-                <option v-for="chapter in chapters" :value="chapter">{{ chapter }}</option>
-              </select>
-            </div>
-            <div class="mb-4">
-              <label class="block mb-2 text-blue-700">Versão:</label>
-              <select v-model="selectedVersion" class="w-full p-2 border rounded" @change="loadVerses">
-                <option v-for="version in versions" :value="version.version">{{ version.version.toUpperCase() }}</option>
-              </select>
-            </div>
-            <div v-if="verses.length > 0" class="mt-8">
-              <h3 class="text-2xl font-semibold mb-4 text-blue-800">{{ selectedBook.name }} {{ selectedChapter }}</h3>
-              <div v-for="verse in verses" :key="verse.number" class="mb-4 p-4 bg-white bg-opacity-70 rounded-lg shadow verse-card">
-                <p class="mb-2 text-gray-800">
-                  <span class="font-bold">{{ verse.number }}</span> 
-                  <span v-html="highlightText(verse.text)"></span>
-                  <span v-if="isFavorite(verse)" class="text-yellow-500 ml-2">★</span>
-                </p>
-                <button @click="toggleVerseFavorite(verse)" class="mt-2 bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-1 px-2 rounded text-sm">
-                  <i class="fas" :class="isFavorite(verse) ? 'fa-star' : 'fa-star-o'"></i>
-                  {{ isFavorite(verse) ? 'Remover dos Favoritos' : 'Adicionar aos Favoritos' }}
-                </button>
-                <button @click="speakVerse(verse)" class="mt-2 ml-2 bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-2 rounded text-sm">
-                  <i class="fas fa-volume-up mr-1"></i>Ouvir
-                </button>
-                <button @click="shareVerse(verse)" class="mt-2 ml-2 bg-green-500 hover:bg-green-700 text-white font-bold py-1 px-2 rounded text-sm">
-                  <i class="fas fa-share mr-1"></i>Compartilhar
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div v-else-if="currentPage === 'favoritos'" key="favoritos" class="content-box p-8 rounded-lg shadow-lg">
-          <h2 class="text-3xl font-bold mb-6 text-blue-800">Meus Versículos Favoritos</h2>
-          <div v-if="favoriteVerses.length === 0" class="text-center text-gray-500">
-            Você ainda não tem versículos favoritos.
-          </div>
-          <div v-else>
-            <div v-for="verse in favoriteVerses" :key="verse.id" class="mb-4 p-4 bg-white bg-opacity-70 rounded-lg shadow verse-card">
-              <p class="mb-2 text-gray-800">
-                <span class="font-bold">{{ verse.book.name }} {{ verse.chapter }}:{{ verse.number }}</span> 
-                {{ verse.text }}
-              </p>
-              <button @click="removeFavorite(verse)" class="mt-2 bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-2 rounded text-sm">
-                <i class="fas fa-trash mr-1"></i>Remover dos favoritos
-              </button>
-              <button @click="loadFullChapter(verse)" class="mt-2 ml-2 bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-2 rounded text-sm">
-                <i class="fas fa-book-open mr-1"></i>Ler capítulo completo
-              </button>
-              <button @click="speakVerse(verse)" class="mt-2 ml-2 bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-2 rounded text-sm">
-                <i class="fas fa-volume-up mr-1"></i>Ouvir
-              </button>
-              <button @click="shareVerse(verse)" class="mt-2 ml-2 bg-green-500 hover:bg-green-700 text-white font-bold py-1 px-2 rounded text-sm">
-                <i class="fas fa-share mr-1"></i>Compartilhar
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <div v-else-if="currentPage === 'planos'" key="planos" class="content-box p-8 rounded-lg shadow-lg">
-          <h2 class="text-3xl font-bold mb-6 text-blue-800">Planos de Leitura</h2>
-          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <div v-for="plan in readingPlans" :key="plan.id" class="bg-white bg-opacity-70 p-6 rounded-lg shadow-md">
-              <h3 class="text-xl font-semibold mb-2">{{ plan.name }}</h3>
-              <p class="text-gray-600 mb-4">{{ plan.description }}</p>
-              <p class="text-sm text-gray-500 mb-2">Duração: {{ plan.duration }} dias</p>
-              <button @click="startPlan(plan)" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-                Começar Plano
-              </button>
-            </div>
-          </div>
-        </div>
-      </transition>
-    </div>
-  </div>
-
-  <div id="installPrompt" class="install-prompt">
-    Instale o VersoDiário no seu dispositivo!
-    <button id="installButton" class="ml-2 bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-2 rounded">
-      Instalar
-    </button>
-  </div>
-
-  <script>
-    const app = Vue.createApp({
-      data() {
-        return {
-          currentPage: 'home',
-          verseOfTheDay: null,
-          books: [],
-          selectedBook: null,
-          selectedChapter: null,
-          selectedVersion: 'nvi',
-          chapters: [],
-          verses: [],
-          favoriteVerses: [],
-          apiToken: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdHIiOiJUaHUgSnVuIDIwIDIwMjQgMTA6MTY6MjcgR01UKzAwMDAuZWxpbmFsZG9vNzE4QGdtYWlsLmNvbSIsImlhdCI6MTcxODg3ODU4N30.nJB2G1FKpa8urTO2F6FkmaJHSR2RkOAsMC-6q4FGmWU',
-          versions: [],
-          isSearchActive: false,
-          searchQuery: '',
-          searchResults: [],
-          darkMode: false,
-          dailyDevotional: '',
-          readingPlans: [
-            { id: 1, name: 'Plano de 30 Dias', description: 'Leia a Bíblia em 30 dias', duration: 30 },
-            { id: 2, name: 'Novo Testamento em 90 Dias', description: 'Foque no Novo Testamento', duration: 90 },
-            { id: 3, name: 'Salmos e Provérbios', description: 'Medite nos Salmos e Provérbios', duration: 60 },
-          ],
+        async function fetchBooks() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/books`, {
+                    headers: { 'Authorization': `Bearer ${API_TOKEN}` }
+                });
+                const books = await response.json();
+                const select = document.getElementById('bookSelect');
+                books.forEach(book => {
+                    const option = document.createElement('option');
+                    option.value = book.abbrev.pt;
+                    option.textContent = book.name;
+                    select.appendChild(option);
+                });
+            } catch (error) {
+                console.error('Erro ao buscar livros:', error);
+                showError('Não foi possível carregar a lista de livros. Por favor, tente novamente mais tarde.');
+            }
         }
-      },
-      mounted() {
-        this.loadVerseOfTheDay();
-        this.loadBooks();
-        this.loadVersions();
-        this.loadFavoriteVerses();
-        this.generateDailyDevotional();
-        this.checkDarkModePreference();
-        setInterval(this.loadVerseOfTheDay, 600000); // 10 minutes
-      },
-      methods: {
-        changePage(page) {
-          this.currentPage = page;
-          if (page === 'estudo') {
-            this.searchResults = [];
-          }
-        },
-        async loadVerseOfTheDay() {
-          try {
-            const response = await axios.get('https://www.abibliadigital.com.br/api/verses/nvi/random', {
-              headers: { 'Authorization': `Bearer ${this.apiToken}` }
-            });
-            this.verseOfTheDay = response.data;
-          } catch (error) {
-            console.error('Erro ao carregar o versículo do dia:', error);
-          }
-        },
-        async loadBooks() {
-          try {
-            const response = await axios.get('https://www.abibliadigital.com.br/api/books', {
-              headers: { 'Authorization': `Bearer ${this.apiToken}` }
-            });
-            this.books = response.data;
-          } catch (error) {
-            console.error('Erro ao carregar os livros:', error);
-          }
-        },
-        async loadVersions() {
-          try {
-            const response = await axios.get('https://www.abibliadigital.com.br/api/versions', {
-              headers: { 'Authorization': `Bearer ${this.apiToken}` }
-            });
-            this.versions = response.data;
-          } catch (error) {
-            console.error('Erro ao carregar as versões:', error);
-          }
-        },
-        loadChapters() {
-          if (this.selectedBook) {
-            this.chapters = Array.from({ length: this.selectedBook.chapters }, (_, i) => i + 1);
-            this.selectedChapter = 1;
-            this.loadVerses();
-          }
-        },
-        async loadVerses() {
-          if (!this.selectedBook || !this.selectedChapter) return;
-          try {
-            const response = await axios.get(`https://www.abibliadigital.com.br/api/verses/${this.selectedVersion}/${this.selectedBook.abbrev.pt}/${this.selectedChapter}`, {
-              headers: { 'Authorization': `Bearer ${this.apiToken}` }
-            });
-            this.verses = response.data.verses;
-          } catch (error) {
-            console.error('Erro ao carregar os versículos:', error);
-          }
-        },
-        toggleVerseFavorite(verse) {
-          const index = this.favoriteVerses.findIndex(v => 
-            v.book.abbrev.pt === this.selectedBook.abbrev.pt &&
-            v.chapter === this.selectedChapter &&
-            v.number === verse.number
-          );
-          if (index === -1) {
-            this.favoriteVerses.push({
-              ...verse,
-              book: this.selectedBook,
-              chapter: this.selectedChapter,
-              version: this.selectedVersion
-            });
-          } else {
-            this.favoriteVerses.splice(index, 1);
-          }
-          this.saveFavoriteVerses();
-        },
-        isFavorite(verse) {
-          return this.favoriteVerses.some(v => 
-            v.book.abbrev.pt === this.selectedBook.abbrev.pt &&
-            v.chapter === this.selectedChapter &&
-            v.number === verse.number
-          );
-        },
-        saveFavoriteVerses() {
-          localStorage.setItem('favoriteVerses', JSON.stringify(this.favoriteVerses));
-        },
-        loadFavoriteVerses() {
-          const saved = localStorage.getItem('favoriteVerses');
-          if (saved) {
-            this.favoriteVerses = JSON.parse(saved);
-          }
-        },
-        removeFavorite(verse) {
-          const index = this.favoriteVerses.findIndex(v => 
-            v.book.abbrev.pt === verse.book.abbrev.pt &&
-            v.chapter === verse.chapter &&
-            v.number === verse.number
-          );
-          if (index !== -1) {
-            this.favoriteVerses.splice(index, 1);
-            this.saveFavoriteVerses();
-          }
-        },
-        async loadFullChapter(verse) {
-          this.selectedBook = verse.book;
-          this.selectedChapter = verse.chapter;
-          this.selectedVersion = verse.version;
-          await this.loadVerses();
-          this.changePage('estudo');
-        },
-        handleSearchIconClick() {
-          this.toggleSearch();
-          if (this.isSearchActive && this.searchQuery) {
-            this.performSearch();
-          }
-        },
-        toggleSearch() {
-          this.isSearchActive = !this.isSearchActive;
-          if (this.isSearchActive) {
-            this.$nextTick(() => {
-              this.$refs.searchInput.focus();
-            });
-          } else {
-            this.searchQuery = '';
-            this.searchResults = [];
-          }
-        },
-        async performSearch() {
-          if (!this.searchQuery) return;
-          this.searchResults = [];
-          this.changePage('estudo');
-          
-          try {
-            const searchPromises = this.versions.map(version => 
-              axios.post('https://www.abibliadigital.com.br/api/verses/search', {
-                version: version.version,
-                search: this.searchQuery
-              }, {
-                headers: { 'Authorization': `Bearer ${this.apiToken}` }
-              })
-            );
 
-            const results = await Promise.all(searchPromises);
-            
-            results.forEach((response, index) => {
-              if (response.data.verses && response.data.verses.length > 0) {
-                const versionResults = response.data.verses.map(verse => ({
-                  ...verse,
-                  version: this.versions[index].version
-                }));
-                this.searchResults.push(...versionResults);
-              }
-            });
-
-            // Sort results by relevance (you might want to implement a more sophisticated sorting algorithm)
-            this.searchResults.sort((a, b) => {
-              const aRelevance = (a.text.match(new RegExp(this.searchQuery, 'gi')) || []).length;
-              const bRelevance = (b.text.match(new RegExp(this.searchQuery, 'gi')) || []).length;
-              return bRelevance - aRelevance;
-            });
-
-          } catch (error) {
-            console.error('Erro ao realizar a pesquisa:', error);
-          }
-        },
-        highlightText(text) {
-          if (!this.searchQuery) return text;
-          const regex = new RegExp(this.searchQuery, 'gi');
-          return text.replace(regex, match => `<span class="highlight">${match}</span>`);
-        },
-        toggleDarkMode() {
-          this.darkMode = !this.darkMode;
-          localStorage.setItem('darkMode', this.darkMode);
-        },
-        checkDarkModePreference() {
-          const savedMode = localStorage.getItem('darkMode');
-          if (savedMode !== null) {
-            this.darkMode = savedMode === 'true';
-          } else {
-            this.darkMode = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-          }
-        },
-        speakVerse(verse) {
-          const speech = new SpeechSynthesisUtterance(verse.text);
-          speech.lang = 'pt-BR';
-          window.speechSynthesis.speak(speech);
-        },
-        shareVerse(verse) {
-          const text = `${verse.text} - ${verse.book.name} ${verse.chapter}:${verse.number}`;
-          if (navigator.share) {
-            navigator.share({
-              title: 'Versículo da Bíblia',
-              text: text,
-              url: window.location.href,
-            })
-              .then(() => console.log('Conteúdo compartilhado com sucesso'))
-              .catch((error) => console.log('Erro ao compartilhar', error));
-          } else {
-            // Fallback para navegadores que não suportam a Web Share API
-            prompt('Copie o texto abaixo para compartilhar:', text);
-          }
-        },
-        generateDailyDevotional() {
-          // Aqui você pode implementar a lógica para gerar um devocional diário
-          // Por enquanto, vamos usar um texto estático como exemplo
-          this.dailyDevotional = "Reflita sobre a importância de amar ao próximo como a si mesmo. Como você pode demonstrar esse amor em suas ações diárias?";
-        },
-        startPlan(plan) {
-          // Aqui você implementaria a lógica para iniciar um plano de leitura
-          alert(`Plano de leitura "${plan.name}" iniciado!`);
-          // Você pode adicionar mais lógica aqui, como salvar o progresso do usuário, etc.
-        },
-      }
-    });
-
-    app.mount('#app');
-
-    // Service Worker Registration
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/service-worker.js')
-          .then((reg) => console.log('Service worker registered.', reg))
-          .catch((err) => console.log('Service worker registration failed:', err));
-      });
-    }
-
-    // Install prompt
-    let deferredPrompt;
-    const installPrompt = document.getElementById('installPrompt');
-    const installButton = document.getElementById('installButton');
-
-    window.addEventListener('beforeinstallprompt', (e) => {
-      e.preventDefault();
-      deferredPrompt = e;
-      installPrompt.style.display = 'block';
-    });
-
-    installButton.addEventListener('click', (e) => {
-      installPrompt.style.display = 'none';
-      deferredPrompt.prompt();
-      deferredPrompt.userChoice.then((choiceResult) => {
-        if (choiceResult.outcome === 'accepted') {
-          console.log('User accepted the install prompt');
-        } else {
-          console.log('User dismissed the install prompt');
+        async function fetchChapter() {
+            const book = document.getElementById('bookSelect').value;
+            const chapter = document.getElementById('chapterInput').value;
+            if (!book || !chapter) {
+                showError('Por favor, selecione um livro e um capítulo.');
+                return;
+            }
+            showLoading();
+            try {
+                const response = await fetch(`${API_BASE_URL}/verses/nvi/${book}/${chapter}`, {
+                    headers: { 'Authorization': `Bearer ${API_TOKEN}` }
+                });
+                const data = await response.json();
+                const verseDisplay = document.getElementById('verseDisplay');
+                verseDisplay.innerHTML = `<h2>${data.book.name} - Capítulo ${data.chapter.number}</h2>`;
+                verseDisplay.innerHTML += data.verses.map(verse => 
+                    `<p><span class="verse-reference">${verse.number}.</span> ${verse.text}</p>`
+                ).join('');
+            } catch (error) {
+                console.error('Erro ao buscar capítulo:', error);
+                showError('Não foi possível carregar o capítulo. Por favor, verifique sua conexão e tente novamente.');
+            } finally {
+                hideLoading();
+            }
         }
-        deferredPrompt = null;
-      });
-    });
-  </script>
-</body></html>
+
+        async function searchVerses() {
+            const searchTerm = document.getElementById('searchInput').value;
+            if (!searchTerm) {
+                showError('Por favor, digite um termo para pesquisar.');
+                return;
+            }
+            showLoading();
+            try {
+                const response = await fetch(`${API_BASE_URL}/verses/search`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${API_TOKEN}`
+                    },
+                    body: JSON.stringify({ version: 'nvi', search: searchTerm })
+                });
+                const data = await response.json();
+                const searchResults = document.getElementById('searchResults');
+                if (data.verses && data.verses.length > 0) {
+                    searchResults.innerHTML = data.verses.map(verse => 
+                        `<p><span class="verse-reference">${verse.book.name} ${verse.chapter}:${verse.number}</span> - ${highlightSearchTerm(verse.text, searchTerm)}</p>`
+                    ).join('');
+                } else {
+                    searchResults.innerHTML = '<p>Nenhum resultado encontrado para sua pesquisa.</p>';
+                }
+            } catch (error) {
+                console.error('Erro na pesquisa:', error);
+                showError('Ocorreu um erro durante a pesquisa. Por favor, tente novamente.');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        function highlightSearchTerm(text, term) {
+            const regex = new RegExp(`(${term})`, 'gi');
+            return text.replace(regex, '<span class="highlight">$1</span>');
+        }
+
+        async function fetchRandomVerse() {
+            showLoading();
+            try {
+                const response = await fetch(`${API_BASE_URL}/verses/nvi/random`, {
+                    headers: { 'Authorization': `Bearer ${API_TOKEN}` }
+                });
+                const data = await response.json();
+                const randomVerseDisplay = document.getElementById('randomVerseDisplay');
+                randomVerseDisplay.innerHTML = `
+                    <p><span class="verse-reference">${data.book.name} ${data.chapter}:${data.number}</span></p>
+                    <p>${data.text}</p>
+                `;
+            } catch (error) {
+                console.error('Erro ao buscar versículo aleatório:', error);
+                showError('Não foi possível carregar um versículo aleatório. Por favor, tente novamente.');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        async function fetchVersions() {
+            showLoading();
+            try {
+                const response = await fetch(`${API_BASE_URL}/versions`, {
+                    headers: { 'Authorization': `Bearer ${API_TOKEN}` }
+                });
+                const versions = await response.json();
+                const versionsList = document.getElementById('versionsList');
+                versionsList.innerHTML = versions.map(version => 
+                    `<p><strong>${version.version}</strong> - ${version.verses} versículos</p>`
+                ).join('');
+            } catch (error) {
+                console.error('Erro ao buscar versões:', error);
+                showError('Não foi possível carregar as versões da Bíblia. Por favor, tente novamente mais tarde.');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        function showSection(sectionId) {
+            document.querySelectorAll('.content-section').forEach(section => {
+                section.style.display = 'none';
+            });
+            document.getElementById(sectionId).style.display = 'block';
+            if (sectionId === 'versions') {
+                fetchVersions();
+            }
+        }
+
+        function showLoading() {
+            document.querySelector('.loading').style.display = 'block';
+        }
+
+        function hideLoading() {
+            document.querySelector('.loading').style.display = 'none';
+        }
+
+        function showError(message) {
+            alert(message);
+        }
+
+        // Inicializa a aplicação
+        fetchBooks();
+
+        // Adiciona funcionalidade de pesquisa ao pressionar Enter
+        document.getElementById('searchInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                searchVerses();
+            }
+        });
+
+        // Melhora a experiência do usuário ao navegar entre capítulos
+        document.getElementById('chapterInput').addEventListener('change', fetchChapter);
+        document.getElementById('bookSelect').addEventListener('change', function() {
+            document.getElementById('chapterInput').value = '1';
+            fetchChapter();
+        });
+
+        // Função para ajustar o tamanho dos ícones com base na largura da tela
+        function adjustIconSize() {
+            const icons = document.querySelectorAll('.nav-icon');
+            const screenWidth = window.innerWidth;
+            let iconSize;
+
+            if (screenWidth <= 320) {
+                iconSize = 24;
+            } else if (screenWidth <= 375) {
+                iconSize = 28;
+            } else if (screenWidth <= 425) {
+                iconSize = 32;
+            } else {
+                iconSize = 36;
+            }
+
+            icons.forEach(icon => {
+                icon.width = iconSize;
+                icon.height = iconSize;
+            });
+        }
+
+        // Chama a função de ajuste ao carregar a página e ao redimensionar a janela
+        window.addEventListener('load', adjustIconSize);
+        window.addEventListener('resize', adjustIconSize);
+    </script>
+</body>
+</html>
