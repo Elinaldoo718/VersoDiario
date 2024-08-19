@@ -236,6 +236,105 @@
             line-height: 1;
         }
         
+        #voiceControl {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            background-color: var(--primary-color);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+        
+        #voiceControl:hover {
+            transform: scale(1.1);
+        }
+        
+        #voiceControl img {
+            width: 24px;
+            height: 24px;
+        }
+        
+        #studyHistory {
+            list-style-type: none;
+            padding: 0;
+        }
+        
+        #studyHistory li {
+            background-color: #f0f0f0;
+            margin-bottom: 10px;
+            padding: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        
+        #studyHistory li:hover {
+            background-color: #e0e0e0;
+        }
+        
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+        }
+        
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 34px;
+        }
+        
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        
+        input:checked + .slider {
+            background-color: var(--primary-color);
+        }
+        
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+        
+        .auto-save-container {
+            display: flex;
+            align-items: center;
+            margin-top: 10px;
+        }
+        
+        .auto-save-container label {
+            margin-left: 10px;
+        }
+        
         @media (max-width: 768px) {
             .nav-icon {
                 padding: 6px;
@@ -296,6 +395,7 @@
             <img src="https://img.icons8.com/color/48/search--v1.png" class="nav-icon" onclick="showSection('search')" alt="Ícone de lupa" width="36" height="36">
             <img src="https://img.icons8.com/color/48/dice.png" class="nav-icon" onclick="showSection('random')" alt="Ícone de dado" width="36" height="36">
             <img src="https://img.icons8.com/color/48/translation.png" class="nav-icon" onclick="showSection('versions')" alt="Ícone de tradução" width="36" height="36">
+            <img src="https://img.icons8.com/color/48/time-machine--v1.png" class="nav-icon" onclick="showSection('history')" alt="Ícone de histórico" width="36" height="36">
             <img src="https://img.icons8.com/color/48/about.png" class="nav-icon" onclick="showSection('about')" alt="Ícone de informação" width="36" height="36">
         </nav>
     </header>
@@ -337,6 +437,18 @@
                 <div id="versionsError" class="error-message"></div>
             </section>
 
+            <section id="history" class="content-section" style="display:none;">
+                <h1>Histórico de Estudo</h1>
+                <div class="auto-save-container">
+                    <label class="switch">
+                        <input type="checkbox" id="autoSaveToggle" checked>
+                        <span class="slider"></span>
+                    </label>
+                    <label for="autoSaveToggle">Salvar automaticamente no histórico</label>
+                </div>
+                <ul id="studyHistory"></ul>
+            </section>
+
             <section id="about" class="content-section" style="display:none;">
                 <h1>Sobre o Estudo Bíblico Digital</h1>
                 <p>Bem-vindo ao seu companheiro de estudo bíblico digital! Esta aplicação foi desenvolvida para facilitar sua jornada espiritual, oferecendo acesso rápido aos textos sagrados, funcionalidades de pesquisa avançada e versículos aleatórios para inspiração diária.</p>
@@ -348,6 +460,9 @@
                     <li>Múltiplas versões da Bíblia</li>
                     <li>Ajuste do tamanho da fonte para melhor leitura</li>
                     <li>Chatbot para assistência e discussões bíblicas</li>
+                    <li>Leitura em voz alta dos capítulos</li>
+                    <li>Histórico de estudo para acompanhar seu progresso</li>
+                    <li>Opção de salvar automaticamente ou manualmente no histórico</li>
                 </ul>
                 <p>Que esta ferramenta possa enriquecer seu conhecimento e fortalecer sua fé.</p>
             </section>
@@ -365,6 +480,10 @@
         <button onclick="changeFontSize(-1)">A-</button>
     </div>
 
+    <div id="voiceControl" onclick="toggleVoiceReading()">
+        <img src="https://img.icons8.com/material-outlined/24/ffffff/speaker.png" alt="Controle de voz">
+    </div>
+
     <script>
         const API_BASE_URL = 'https://www.abibliadigital.com.br/api';
         const API_TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdHIiOiJUaHUgSnVuIDIwIDIwMjQgMTA6MTY6MjcgR01UKzAwMDAuZWxpbmFsZG9vNzE4QGdtYWlsLmNvbSIsImlhdCI6MTcxODg3ODU4N30.nJB2G1FKpa8urTO2F6FkmaJHSR2RkOAsMC-6q4FGmWU';
@@ -372,6 +491,10 @@
         let currentVersion = 'nvi';
         let lastSearchTerm = '';
         let currentFontSize = 16;
+        let isReading = false;
+        let utterance = null;
+        let studyHistory = [];
+        let autoSaveEnabled = true;
 
         async function fetchVersions() {
             showLoading();
@@ -445,6 +568,9 @@
                         highlightedVerse.scrollIntoView({ behavior: 'smooth', block: 'center' });
                     }
                 }
+                if (autoSaveEnabled) {
+                    addToHistory(data.book.name, chapter, currentVersion);
+                }
             } catch (error) {
                 console.error('Erro ao buscar capítulo:', error);
                 showError('booksError', 'Não foi possível carregar o capítulo. Por favor, verifique sua conexão e tente novamente.');
@@ -506,6 +632,9 @@
                     <p>${data.text}</p>
                 `;
                 hideError('randomError');
+                if (autoSaveEnabled) {
+                    addToHistory(data.book.name, data.chapter, currentVersion, data.number);
+                }
             } catch (error) {
                 console.error('Erro ao buscar versículo aleatório:', error);
                 showError('randomError', 'Não foi possível carregar um versículo aleatório. Por favor, tente novamente.');
@@ -521,6 +650,8 @@
             document.getElementById(sectionId).style.display = 'block';
             if (sectionId === 'versions') {
                 fetchVersions();
+            } else if (sectionId === 'history') {
+                updateHistoryDisplay();
             }
         }
 
@@ -554,9 +685,93 @@
             menu.style.display = menu.style.display === 'flex' ? 'none' : 'flex';
         }
 
+        function toggleVoiceReading() {
+            if (!isReading) {
+                startReading();
+            } else {
+                stopReading();
+            }
+        }
+
+        function startReading() {
+            const textToRead = document.getElementById('verseDisplay').innerText;
+            utterance = new SpeechSynthesisUtterance(textToRead);
+            utterance.lang = 'pt-BR';
+            utterance.rate = 0.9;
+            utterance.pitch = 1;
+
+            const voices = speechSynthesis.getVoices();
+            const portugueseVoice = voices.find(voice => voice.lang.startsWith('pt'));
+            if (portugueseVoice) {
+                utterance.voice = portugueseVoice;
+            }
+
+            utterance.onend = function() {
+                isReading = false;
+                updateVoiceControlIcon();
+            };
+
+            speechSynthesis.speak(utterance);
+            isReading = true;
+            updateVoiceControlIcon();
+        }
+
+        function stopReading() {
+            if (utterance) {
+                speechSynthesis.cancel();
+            }
+            isReading = false;
+            updateVoiceControlIcon();
+        }
+
+        function updateVoiceControlIcon() {
+            const voiceControl = document.getElementById('voiceControl');
+            if (isReading) {
+                voiceControl.innerHTML = '<img src="https://img.icons8.com/material-outlined/24/ffffff/pause.png" alt="Pausar leitura">';
+            } else {
+                voiceControl.innerHTML = '<img src="https://img.icons8.com/material-outlined/24/ffffff/speaker.png" alt="Iniciar leitura">';
+            }
+        }
+
+        function addToHistory(book, chapter, version, verse = null) {
+            const historyEntry = {
+                book,
+                chapter,
+                version,
+                verse,
+                timestamp: new Date().toISOString()
+            };
+            studyHistory.unshift(historyEntry);
+            if (studyHistory.length > 50) {
+                studyHistory.pop();
+            }
+            localStorage.setItem('studyHistory', JSON.stringify(studyHistory));
+            updateHistoryDisplay();
+        }
+
+        function updateHistoryDisplay() {
+            const historyList = document.getElementById('studyHistory');
+            historyList.innerHTML = '';
+            studyHistory.forEach((entry, index) => {
+                const li = document.createElement('li');
+                li.textContent = `${entry.book} ${entry.chapter}${entry.verse ? `:${entry.verse}` : ''} (${entry.version.toUpperCase()}) - ${new Date(entry.timestamp).toLocaleString()}`;
+                li.onclick = () => fetchChapter(entry.book, entry.chapter, entry.verse);
+                historyList.appendChild(li);
+            });
+        }
+
+        function loadHistory() {
+            const savedHistory = localStorage.getItem('studyHistory');
+            if (savedHistory) {
+                studyHistory = JSON.parse(savedHistory);
+                updateHistoryDisplay();
+            }
+        }
+
         // Inicializa a aplicação
         fetchVersions();
         fetchBooks();
+        loadHistory();
 
         // Adiciona funcionalidade de pesquisa ao pressionar Enter
         document.getElementById('searchInput').addEventListener('keypress', function(e) {
@@ -578,52 +793,25 @@
             fetchChapter();
         });
 
-        // Função para ajustar o tamanho dos ícones com base na largura da tela
-        function adjustIconSize() {
-            const icons = document.querySelectorAll('.nav-icon');
-            const screenWidth = window.innerWidth;
-            let iconSize;
-
-            if (screenWidth <= 320) {
-                iconSize = 24;
-            } else if (screenWidth <= 375) {
-                iconSize = 28;
-            } else if (screenWidth <= 425) {
-                iconSize = 32;
-            } else {
-                iconSize = 36;
-            }
-
-            icons.forEach(icon => {
-                icon.width = iconSize;
-                icon.height = iconSize;
-            });
-        }
-
-        // Chama a função de ajuste ao carregar a página e ao redimensionar a janela
-        window.addEventListener('load', adjustIconSize);
-        window.addEventListener('resize', adjustIconSize);
-
-        // Fecha o menu de tamanho de fonte ao clicar fora dele
-        document.addEventListener('click', function(event) {
-            const fontSizeControl = document.getElementById('fontSizeControl');
-            const fontSizeMenu = document.getElementById('fontSizeMenu');
-            if (!fontSizeControl.contains(event.target) && !fontSizeMenu.contains(event.target)) {
-                fontSizeMenu.style.display = 'none';
-            }
+        // Toggle para salvar automaticamente no histórico
+        document.getElementById('autoSaveToggle').addEventListener('change', function() {
+            autoSaveEnabled = this.checked;
+            localStorage.setItem('autoSaveEnabled', autoSaveEnabled);
         });
+
+        // Carrega a configuração de auto-save
+        const savedAutoSave = localStorage.getItem('autoSaveEnabled');
+        if (savedAutoSave !== null) {
+            autoSave = savedAutoSave === 'true';
+            document.getElementById('autoSaveToggle').checked = autoSaveEnabled;
+        }
     </script>
 
-    <!-- Chatbot integration -->
     <script>
         window.difyChatbotConfig = {
             token: 'gIF8rrHRJYTxcjd7'
         }
     </script>
-    <script
-        src="https://udify.app/embed.min.js"
-        id="gIF8rrHRJYTxcjd7"
-        defer>
-    </script>
+    <script src="https://udify.app/embed.min.js" id="gIF8rrHRJYTxcjd7" defer></script>
 </body>
 </html>
