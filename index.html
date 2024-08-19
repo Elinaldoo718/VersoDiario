@@ -280,6 +280,12 @@
                 padding: 6px;
             }
         }
+        
+        #dify-chatbot-bubble-button {
+            background-color: #1C64F2 !important;
+            left: 20px !important;
+            right: auto !important;
+        }
     </style>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
 </head>
@@ -341,6 +347,7 @@
                     <li>Versículo aleatório para reflexão</li>
                     <li>Múltiplas versões da Bíblia</li>
                     <li>Ajuste do tamanho da fonte para melhor leitura</li>
+                    <li>Chatbot para assistência e discussões bíblicas</li>
                 </ul>
                 <p>Que esta ferramenta possa enriquecer seu conhecimento e fortalecer sua fé.</p>
             </section>
@@ -605,6 +612,18 @@
                 fontSizeMenu.style.display = 'none';
             }
         });
+    </script>
+
+    <!-- Chatbot integration -->
+    <script>
+        window.difyChatbotConfig = {
+            token: 'gIF8rrHRJYTxcjd7'
+        }
+    </script>
+    <script
+        src="https://udify.app/embed.min.js"
+        id="gIF8rrHRJYTxcjd7"
+        defer>
     </script>
 </body>
 </html>
