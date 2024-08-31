@@ -1,0 +1,932 @@
+<html><head><base href="https://biblia.digital/">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Estudo Bíblico Digital Avançado Plus</title>
+    <style>
+        :root {
+            --primary-color: #2ecc71;
+            --secondary-color: #27ae60;
+            --background-color: #f0f8ff;
+            --text-color: #2c3e50;
+            --accent-color: #3498db;
+            --error-color: #e74c3c;
+            --highlight-color: #fff176;
+            --font-size: 16px;
+        }
+        
+        body {
+            font-family: 'Roboto', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            font-size: var(--font-size);
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 5px;
+        }
+        
+        header {
+            background-color: var(--primary-color);
+            padding: 10px 0;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        
+        nav {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        
+        .nav-icon {
+            cursor: pointer;
+            transition: all 0.3s ease;
+            padding: 8px;
+            border-radius: 50%;
+            margin: 5px;
+            background-color: rgba(255,255,255,0.2);
+        }
+        
+        .nav-icon:hover {
+            background-color: var(--secondary-color);
+            transform: translateY(-3px);
+        }
+        
+        main {
+            padding: 20px 10px;
+        }
+        
+        .content-section {
+            background-color: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 6px 12px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .content-section:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 24px rgba(0,0,0,0.15);
+        }
+        
+        h1, h2 {
+            color: var(--secondary-color);
+            margin-bottom: 15px;
+        }
+        
+        input, select, button {
+            margin: 8px 0;
+            padding: 10px;
+            border: 2px solid #bdc3c7;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            width: 100%;
+            max-width: 300px;
+        }
+        
+        input:focus, select:focus {
+            border-color: var(--primary-color);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(46, 204, 113, 0.2);
+        }
+        
+        button {
+            background-color: var(--primary-color);
+            color: white;
+            cursor: pointer;
+            font-weight: bold;
+            border: none;
+            transition: all 0.3s ease;
+        }
+        
+        button:hover {
+            background-color: var(--secondary-color);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        
+        #verseDisplay, #randomVerseDisplay, #searchResults, #historyVerseDisplay, #studyNotesDisplay {
+            font-size: var(--font-size);
+            line-height: 1.6;
+            margin-top: 15px;
+            padding: 15px;
+            background-color: #f9f9f9;
+            border-radius: 8px;
+            border-left: 4px solid var(--accent-color);
+            transition: all 0.3s ease;
+        }
+        
+        #verseDisplay:hover, #randomVerseDisplay:hover, #searchResults:hover, #historyVerseDisplay:hover, #studyNotesDisplay:hover {
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            transform: translateY(-2px);
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            margin-top: 15px;
+            font-size: var(--font-size);
+            color: var(--secondary-color);
+        }
+        
+        .loading:after {
+            content: '.';
+            animation: dots 1.5s steps(5, end) infinite;
+        }
+        
+        @keyframes dots {
+            0%, 20% {
+                color: rgba(0,0,0,0);
+                text-shadow:
+                    .25em 0 0 rgba(0,0,0,0),
+                    .5em 0 0 rgba(0,0,0,0);
+            }
+            40% {
+                color: var(--text-color);
+                text-shadow:
+                    .25em 0 0 rgba(0,0,0,0),
+                    .5em 0 0 rgba(0,0,0,0);
+            }
+            60% {
+                text-shadow:
+                    .25em 0 0 var(--text-color),
+                    .5em 0 0 rgba(0,0,0,0);
+            }
+            80%, 100% {
+                text-shadow:
+                    .25em 0 0 var(--text-color),
+                    .5em 0 0 var(--text-color);
+            }
+        }
+        
+        .highlight {
+            background-color: var(--highlight-color);
+            padding: 2px 4px;
+            border-radius: 4px;
+        }
+        
+        .verse-reference {
+            font-weight: bold;
+            color: var(--secondary-color);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .verse-reference:hover {
+            color: var(--primary-color);
+            text-decoration: underline;
+        }
+        
+        .error-message {
+            color: var(--error-color);
+            background-color: #fde9e8;
+            border-left: 4px solid var(--error-color);
+            padding: 10px;
+            margin-top: 10px;
+            border-radius: 4px;
+            font-size: 14px;
+            display: none;
+        }
+        
+        #fontSizeControl {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: var(--primary-color);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+        
+        #fontSizeControl:hover {
+            transform: scale(1.1);
+        }
+        
+        #fontSizeControl img {
+            width: 24px;
+            height: 24px;
+        }
+        
+        #fontSizeMenu {
+            position: fixed;
+            bottom: 70px;
+            right: 20px;
+            background-color: white;
+            border-radius: 8px;
+            padding: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+        
+        #fontSizeMenu button {
+            width: 30px;
+            height: 30px;
+            font-size: 16px;
+            margin: 5px 0;
+            padding: 0;
+            line-height: 1;
+        }
+        
+        #studyHistory {
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 10px;
+            margin-top: 20px;
+            transition: all 0.3s ease;
+        }
+        
+        #studyHistory:hover {
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        
+        #studyHistory h3 {
+            margin-top: 0;
+            color: var(--secondary-color);
+        }
+        
+        #studyHistory ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        
+        #studyHistory li {
+            padding: 8px 10px;
+            border-bottom: 1px solid #eee;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        
+        #studyHistory li:hover {
+            background-color: #f0f0f0;
+        }
+        
+        #studyHistory li:last-child {
+            border-bottom: none;
+        }
+        
+        @media (max-width: 768px) {
+            .nav-icon {
+                padding: 6px;
+            }
+            
+            .content-section {
+                padding: 15px;
+            }
+            
+            input, select, button {
+                width: 100%;
+                max-width: none;
+                font-size: 14px;
+                padding: 8px;
+            }
+            
+            h1 {
+                font-size: 20px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            nav {
+                justify-content: space-between;
+            }
+            
+            .nav-icon {
+                padding: 5px;
+                margin: 3px;
+            }
+            
+            h1 {
+                font-size: 18px;
+            }
+            
+            .content-section {
+                padding: 12px;
+            }
+            
+            input, select, button {
+                font-size: 12px;
+                padding: 6px;
+            }
+        }
+        
+        #dify-chatbot-bubble-button {
+            background-color: #1C64F2 !important;
+            left: 20px !important;
+            right: auto !important;
+        }
+        
+        /* Animações adicionais */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+        
+        @keyframes slideInFromLeft {
+            0% {
+                transform: translateX(-100%);
+            }
+            100% {
+                transform: translateX(0);
+            }
+        }
+        
+        .slide-in {
+            animation: slideInFromLeft 0.5s ease-out;
+        }
+
+        /* Estilos para novas funcionalidades */
+        #studyNotes {
+            margin-top: 20px;
+        }
+
+        #notesTextarea {
+            width: 100%;
+            height: 100px;
+            margin-bottom: 10px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            resize: vertical;
+        }
+
+        #bookmarksList {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        #bookmarksList li {
+            background-color: #f0f0f0;
+            margin-bottom: 5px;
+            padding: 10px;
+            border-radius: 4px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        #bookmarksList li button {
+            background-color: var(--error-color);
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        #timer {
+            font-size: 24px;
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        #timerControls {
+            display: flex;
+            justify-content: center;
+            margin-top: 10px;
+        }
+
+        #timerControls button {
+            margin: 0 5px;
+        }
+
+        #readingPlan {
+            margin-top: 20px;
+        }
+
+        #planList {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        #planList li {
+            background-color: #f0f0f0;
+            margin-bottom: 5px;
+            padding: 10px;
+            border-radius: 4px;
+        }
+
+        .completed {
+            text-decoration: line-through;
+            color: #888;
+        }
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <header>
+        <nav>
+            <img src="https://img.icons8.com/color/48/holy-bible.png" class="nav-icon" onclick="showSection('books')" alt="Ícone da Bíblia" width="36" height="36">
+            <img src="https://img.icons8.com/color/48/search--v1.png" class="nav-icon" onclick="showSection('search')" alt="Ícone de lupa" width="36" height="36">
+            <img src="https://img.icons8.com/color/48/dice.png" class="nav-icon" onclick="showSection('random')" alt="Ícone de dado" width="36" height="36">
+            <img src="https://img.icons8.com/color/48/translation.png" class="nav-icon" onclick="showSection('versions')" alt="Ícone de tradução" width="36" height="36">
+            <img src="https://img.icons8.com/color/48/time-machine.png" class="nav-icon" onclick="showSection('history')" alt="Ícone de histórico" width="36" height="36">
+            <img src="https://img.icons8.com/color/48/note.png" class="nav-icon" onclick="showSection('notes')" alt="Ícone de notas" width="36" height="36">
+            <img src="https://img.icons8.com/color/48/bookmark-ribbon.png" class="nav-icon" onclick="showSection('bookmarks')" alt="Ícone de marcadores" width="36" height="36">
+            <img src="https://img.icons8.com/color/48/timer.png" class="nav-icon" onclick="showSection('timer')" alt="Ícone de temporizador" width="36" height="36">
+            <img src="https://img.icons8.com/color/48/calendar.png" class="nav-icon" onclick="showSection('plan')" alt="Ícone de plano de leitura" width="36" height="36">
+            <img src="https://img.icons8.com/color/48/about.png" class="nav-icon" onclick="showSection('about')" alt="Ícone de informação" width="36" height="36">
+        </nav>
+    </header>
+
+    <main>
+        <div class="container">
+            <section id="books" class="content-section slide-in">
+                <h1>Explorar Livros da Bíblia</h1>
+                <select id="versionSelect">
+                    <option value="">Selecione uma versão</option>
+                </select>
+                <select id="bookSelect">
+                    <option value="">Selecione um livro</option>
+                </select>
+                <input type="number" id="chapterInput" placeholder="Capítulo" min="1">
+                <button onclick="fetchChapter()">Ler Capítulo</button>
+                <div id="verseDisplay"></div>
+                <div id="booksError" class="error-message"></div>
+            </section>
+
+            <section id="search" class="content-section slide-in" style="display:none;">
+                <h1>Pesquisar na Bíblia</h1>
+                <input type="text" id="searchInput" placeholder="Digite sua pesquisa">
+                <button onclick="searchVerses()">Pesquisar</button>
+                <div id="searchResults"></div>
+                <div id="searchError" class="error-message"></div>
+            </section>
+
+            <section id="random" class="content-section slide-in" style="display:none;">
+                <h1>Versículo Aleatório para Reflexão</h1>
+                <button onclick="fetchRandomVerse()">Gerar Versículo</button>
+                <div id="randomVerseDisplay"></div>
+                <div id="randomError" class="error-message"></div>
+            </section>
+
+            <section id="versions" class="content-section slide-in" style="display:none;">
+                <h1>Versões da Bíblia Disponíveis</h1>
+                <div id="versionsList"></div>
+                <div id="versionsError" class="error-message"></div>
+            </section>
+
+            <section id="history" class="content-section slide-in" style="display:none;">
+                <h1>Histórico de Estudo</h1>
+                <div id="studyHistory">
+                    <h3>Últimos Capítulos Lidos</h3>
+                    <ul id="historyList"></ul>
+                </div>
+                <div id="historyVerseDisplay"></div>
+            </section>
+
+            <section id="notes" class="content-section slide-in" style="display:none;">
+                <h1>Notas de Estudo</h1>
+                <textarea id="notesTextarea" placeholder="Digite suas notas aqui..."></textarea>
+                <button onclick="saveNotes()">Salvar Notas</button>
+                <div id="studyNotesDisplay"></div>
+            </section>
+
+            <section id="bookmarks" class="content-section slide-in" style="display:none;">
+                <h1>Marcadores</h1>
+                <input type="text" id="bookmarkInput" placeholder="Digite a referência (ex: João 3:16)">
+                <button onclick="addBookmark()">Adicionar Marcador</button>
+                <ul id="bookmarksList"></ul>
+            </section>
+
+            <section id="timer" class="content-section slide-in" style="display:none;">
+                <h1>Temporizador de Estudo</h1>
+                <div id="timerDisplay">00:00:00</div>
+                <div id="timerControls">
+                    <button onclick="startTimer()">Iniciar</button>
+                    <button onclick="pauseTimer()">Pausar</button>
+                    <button onclick="resetTimer()">Reiniciar</button>
+                </div>
+            </section>
+
+            <section id="plan" class="content-section slide-in" style="display:none;">
+                <h1>Plano de Leitura</h1>
+                <input type="text" id="planInput" placeholder="Digite o capítulo a ser lido">
+                <button onclick="addToPlan()">Adicionar ao Plano</button>
+                <ul id="planList"></ul>
+            </section>
+
+            <section id="about" class="content-section slide-in" style="display:none;">
+                <h1>Sobre o Estudo Bíblico Digital Avançado Plus</h1>
+                <p>Bem-vindo ao seu companheiro de estudo bíblico digital avançado! Esta aplicação foi desenvolvida para enriquecer sua jornada espiritual, oferecendo uma experiência imersiva e interativa com os textos sagrados.</p>
+                <p>Recursos principais:</p>
+                <ul>
+                    <li>Acesso a todos os livros da Bíblia com navegação intuitiva</li>
+                    <li>Pesquisa avançada por palavras-chave ou frases</li>
+                    <li>Versículo aleatório para inspiração diária</li>
+                    <li>Múltiplas versões da Bíblia para comparação</li>
+                    <li>Histórico de estudo detalhado para revisão e continuidade</li>
+                    <li>Sistema de notas para registrar suas reflexões</li>
+                    <li>Marcadores para salvar versículos favoritos</li>
+                    <li>Temporizador de estudo para manter o foco</li>
+                    <li>Plano de leitura personalizável</li>
+                    <li>Ajuste personalizado do tamanho da fonte para conforto na leitura</li>
+                    <li>Chatbot integrado para assistência e discussões bíblicas aprofundadas</li>
+                    <li>Design responsivo para uma experiência perfeita em todos os dispositivos</li>
+                </ul>
+                <p>Que esta ferramenta possa ser um farol de conhecimento, fortalecendo sua fé e aprofundando sua compreensão das escrituras sagradas.</p>
+            </section>
+        </div>
+    </main>
+
+    <div class="loading">Preparando sua jornada espiritual</div>
+
+    <div id="fontSizeControl" onclick="toggleFontSizeMenu()">
+        <img src="https://img.icons8.com/material-outlined/24/ffffff/font-size.png" alt="Ajustar tamanho da fonte">
+    </div>
+    <div id="fontSizeMenu">
+        <button onclick="changeFontSize(1)">A+</button>
+        <span id="currentFontSize">16px</span>
+        <button onclick="changeFontSize(-1)">A-</button>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'https://www.abibliadigital.com.br/api';
+        const API_TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdHIiOiJUaHUgSnVuIDIwIDIwMjQgMTA6MTY6MjcgR01UKzAwMDAuZWxpbmFsZG9vNzE4QGdtYWlsLmNvbSIsImlhdCI6MTcxODg3ODU4N30.nJB2G1FKpa8urTO2F6FkmaJHSR2RkOAsMC-6q4FGmWU';
+
+        let currentVersion = 'nvi';
+        let lastSearchTerm = '';
+        let currentFontSize = 16;
+        let studyHistory = [];
+        let timerInterval;
+        let timerSeconds = 0;
+        let isTimerRunning = false;
+
+        async function fetchVersions() {
+            showLoading();
+            try {
+                const response = await fetch(`${API_BASE_URL}/versions`, {
+                    headers: { 'Authorization': `Bearer ${API_TOKEN}` }
+                });
+                const versions = await response.json();
+                const versionSelect = document.getElementById('versionSelect');
+                versionSelect.innerHTML = '<option value="">Selecione uma versão</option>';
+                versions.forEach(version => {
+                    const option = document.createElement('option');
+                    option.value = version.version;
+                    option.textContent = `${version.version} - ${version.name}`;
+                    versionSelect.appendChild(option);
+                });
+                versionSelect.value = currentVersion;
+                
+                // Populate versions list
+                const versionsList = document.getElementById('versionsList');
+                versionsList.innerHTML = versions.map(version => 
+                    `<p><strong>${version.version}</strong>: ${version.name}</p>`
+                ).join('');
+            } catch (error) {
+                console.error('Erro ao buscar versões:', error);
+                showError('versionsError', 'Não foi possível carregar as versões da Bíblia. Por favor, tente novamente mais tarde.');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        async function fetchBooks() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/books`, {
+                    headers: { 'Authorization': `Bearer ${API_TOKEN}` }
+                });
+                const books = await response.json();
+                const select = document.getElementById('bookSelect');
+                select.innerHTML = '<option value="">Selecione um livro</option>';
+                books.forEach(book => {
+                    const option = document.createElement('option');
+                    option.value = book.abbrev.pt;
+                    option.textContent = book.name;
+                    select.appendChild(option);
+                });
+            } catch (error) {
+                console.error('Erro ao buscar livros:', error);
+                showError('booksError', 'Não foi possível carregar a lista de livros. Por favor, tente novamente mais tarde.');
+            }
+        }
+
+        async function fetchChapter(book, chapter, highlightVerse) {
+            if (!book || !chapter) {
+                book = document.getElementById('bookSelect').value;
+                chapter = document.getElementById('chapterInput').value;
+            }
+            if (!book || !chapter) {
+                showError('booksError', 'Por favor, selecione um livro e um capítulo.');
+                return;
+            }
+            showLoading();
+            try {
+                const response = await fetch(`${API_BASE_URL}/verses/${currentVersion}/${book}/${chapter}`, {
+                    headers: { 'Authorization': `Bearer ${API_TOKEN}` }
+                });
+                const data = await response.json();
+                const verseDisplay = document.getElementById('verseDisplay');
+                verseDisplay.innerHTML = `
+                    <h2 class="fade-in">${data.book.name} - Capítulo ${data.chapter.number} (${currentVersion.toUpperCase()})</h2>
+                    ${data.verses.map(verse => 
+                        `<p class="fade-in" style="animation-delay: ${verse.number * 50}ms;">
+                            <span class="verse-reference">${verse.number}.</span> 
+                            ${highlightVerse === verse.number ? highlightSearchTerm(verse.text, lastSearchTerm) : verse.text}
+                        </p>`
+                    ).join('')}
+                `;
+                hideError('booksError');
+                showSection('books');
+                if (highlightVerse) {
+                    const highlightedVerse = verseDisplay.querySelector(`p:nth-child(${highlightVerse})`);
+                    if (highlightedVerse) {
+                        highlightedVerse.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
+                }
+                addToHistory(data.book.name, chapter, currentVersion);
+            } catch (error) {
+                console.error('Erro ao buscar capítulo:', error);
+                showError('booksError', 'Não foi possível carregar o capítulo. Por favor, verifique sua conexão e tente novamente.');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        async function searchVerses() {
+            const searchTerm = document.getElementById('searchInput').value;
+            if (!searchTerm) {
+                showError('searchError', 'Por favor, digite um termo para pesquisar.');
+                return;
+            }
+            showLoading();
+            try {
+                const response = await fetch(`${API_BASE_URL}/verses/search`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${API_TOKEN}`
+                    },
+                    body: JSON.stringify({ version: currentVersion, search: searchTerm })
+                });
+                const data = await response.json();
+                const searchResults = document.getElementById('searchResults');
+                if (data.verses && data.verses.length > 0) {
+                    searchResults.innerHTML = data.verses.map((verse, index) => 
+                        `<p class="fade-in" style="animation-delay: ${index * 100}ms;">
+                            <span class="verse-reference" onclick="fetchChapter('${verse.book.abbrev.pt}', ${verse.chapter}, ${verse.number})">
+                                ${verse.book.name} ${verse.chapter}:${verse.number} (${currentVersion.toUpperCase()})
+                            </span> - ${highlightSearchTerm(verse.text, searchTerm)}
+                        </p>`
+                    ).join('');
+                    hideError('searchError');
+                    lastSearchTerm = searchTerm;
+                } else {
+                    searchResults.innerHTML = '<p class="fade-in">Nenhum resultado encontrado para sua pesquisa.</p>';
+                }
+            } catch (error) {
+                console.error('Erro na pesquisa:', error);
+                showError('searchError', 'Ocorreu um erro durante a pesquisa. Por favor, tente novamente.');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        function highlightSearchTerm(text, term) {
+            const regex = new RegExp(`(${term})`, 'gi');
+            return text.replace(regex, '<span class="highlight">$1</span>');
+        }
+
+        async function fetchRandomVerse() {
+            showLoading();
+            try {
+                const response = await fetch(`${API_BASE_URL}/verses/${currentVersion}/random`, {
+                    headers: { 'Authorization': `Bearer ${API_TOKEN}` }
+                });
+                const data = await response.json();
+                const randomVerseDisplay = document.getElementById('randomVerseDisplay');
+                randomVerseDisplay.innerHTML = `
+                    <p class="fade-in"><span class="verse-reference">${data.book.name} ${data.chapter}:${data.number} (${currentVersion.toUpperCase()})</span></p>
+                    <p class="fade-in" style="animation-delay: 200ms;">${data.text}</p>
+                `;
+                hideError('randomError');
+            } catch (error) {
+                console.error('Erro ao buscar versículo aleatório:', error);
+                showError('randomError', 'Não foi possível carregar um versículo aleatório. Por favor, tente novamente.');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        function showSection(sectionId) {
+            document.querySelectorAll('.content-section').forEach(section => {
+                section.style.display = 'none';
+            });
+            const targetSection = document.getElementById(sectionId);
+            targetSection.style.display = 'block';
+            targetSection.classList.add('slide-in');
+            setTimeout(() => targetSection.classList.remove('slide-in'), 500);
+            
+            if (sectionId === 'versions') {
+                fetchVersions();
+            } else if (sectionId === 'history') {
+                updateHistoryDisplay();
+            } else if (sectionId === 'notes') {
+                loadNotes();
+            } else if (sectionId === 'bookmarks') {
+                loadBookmarks();
+            } else if (sectionId === 'plan') {
+                loadReadingPlan();
+            }
+        }
+
+        function showLoading() {
+            document.querySelector('.loading').style.display =  'block';
+        }
+
+        function hideLoading() {
+            document.querySelector('.loading').style.display = 'none';
+        }
+
+        function showError(elementId, message) {
+            const errorElement = document.getElementById(elementId);
+            errorElement.textContent = message;
+            errorElement.style.display = 'block';
+        }
+
+        function hideError(elementId) {
+            document.getElementById(elementId).style.display = 'none';
+        }
+
+        function changeFontSize(delta) {
+            currentFontSize = Math.max(12, Math.min(24, currentFontSize + delta));
+            document.body.style.fontSize = `${currentFontSize}px`;
+            document.getElementById('currentFontSize').textContent = `${currentFontSize}px`;
+        }
+
+        function toggleFontSizeMenu() {
+            const menu = document.getElementById('fontSizeMenu');
+            menu.style.display = menu.style.display === 'none' ? 'flex' : 'none';
+        }
+
+        function addToHistory(book, chapter, version) {
+            const historyItem = { book, chapter, version, timestamp: new Date().toISOString() };
+            studyHistory.unshift(historyItem);
+            if (studyHistory.length > 10) {
+                studyHistory.pop();
+            }
+            localStorage.setItem('studyHistory', JSON.stringify(studyHistory));
+            updateHistoryDisplay();
+        }
+
+        function updateHistoryDisplay() {
+            const historyList = document.getElementById('historyList');
+            historyList.innerHTML = studyHistory.map((item, index) => 
+                `<li onclick="fetchChapter('${item.book}', ${item.chapter})" class="fade-in" style="animation-delay: ${index * 100}ms;">
+                    ${item.book} ${item.chapter} (${item.version.toUpperCase()}) - ${new Date(item.timestamp).toLocaleString()}
+                </li>`
+            ).join('');
+        }
+
+        function saveNotes() {
+            const notes = document.getElementById('notesTextarea').value;
+            localStorage.setItem('studyNotes', notes);
+            document.getElementById('studyNotesDisplay').innerHTML = `<p class="fade-in">${notes}</p>`;
+        }
+
+        function loadNotes() {
+            const notes = localStorage.getItem('studyNotes') || '';
+            document.getElementById('notesTextarea').value = notes;
+            document.getElementById('studyNotesDisplay').innerHTML = `<p class="fade-in">${notes}</p>`;
+        }
+
+        function addBookmark() {
+            const bookmarkInput = document.getElementById('bookmarkInput');
+            const bookmark = bookmarkInput.value.trim();
+            if (bookmark) {
+                const bookmarks = JSON.parse(localStorage.getItem('bookmarks') || '[]');
+                bookmarks.push(bookmark);
+                localStorage.setItem('bookmarks', JSON.stringify(bookmarks));
+                bookmarkInput.value = '';
+                loadBookmarks();
+            }
+        }
+
+        function loadBookmarks() {
+            const bookmarks = JSON.parse(localStorage.getItem('bookmarks') || '[]');
+            const bookmarksList = document.getElementById('bookmarksList');
+            bookmarksList.innerHTML = bookmarks.map((bookmark, index) => 
+                `<li class="fade-in" style="animation-delay: ${index * 100}ms;">
+                    ${bookmark}
+                    <button onclick="removeBookmark(${index})">Remover</button>
+                </li>`
+            ).join('');
+        }
+
+        function removeBookmark(index) {
+            const bookmarks = JSON.parse(localStorage.getItem('bookmarks') || '[]');
+            bookmarks.splice(index, 1);
+            localStorage.setItem('bookmarks', JSON.stringify(bookmarks));
+            loadBookmarks();
+        }
+
+        function startTimer() {
+            if (!isTimerRunning) {
+                isTimerRunning = true;
+                timerInterval = setInterval(updateTimer, 1000);
+            }
+        }
+
+        function pauseTimer() {
+            isTimerRunning = false;
+            clearInterval(timerInterval);
+        }
+
+        function resetTimer() {
+            isTimerRunning = false;
+            clearInterval(timerInterval);
+            timerSeconds = 0;
+            updateTimerDisplay();
+        }
+
+        function updateTimer() {
+            timerSeconds++;
+            updateTimerDisplay();
+        }
+
+        function updateTimerDisplay() {
+            const hours = Math.floor(timerSeconds / 3600);
+            const minutes = Math.floor((timerSeconds % 3600) / 60);
+            const seconds = timerSeconds % 60;
+            document.getElementById('timerDisplay').textContent = 
+                `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        }
+
+        function addToPlan() {
+            const planInput = document.getElementById('planInput');
+            const planItem = planInput.value.trim();
+            if (planItem) {
+                const plan = JSON.parse(localStorage.getItem('readingPlan') || '[]');
+                plan.push({ text: planItem, completed: false });
+                localStorage.setItem('readingPlan', JSON.stringify(plan));
+                planInput.value = '';
+                loadReadingPlan();
+            }
+        }
+
+        function loadReadingPlan() {
+            const plan = JSON.parse(localStorage.getItem('readingPlan') || '[]');
+            const planList = document.getElementById('planList');
+            planList.innerHTML = plan.map((item, index) => 
+                `<li class="fade-in ${item.completed ? 'completed' : ''}" style="animation-delay: ${index * 100}ms;">
+                    <input type="checkbox" ${item.completed ? 'checked' : ''} onchange="togglePlanItem(${index})">
+                    ${item.text}
+                </li>`
+            ).join('');
+        }
+
+        function togglePlanItem(index) {
+            const plan = JSON.parse(localStorage.getItem('readingPlan') || '[]');
+            plan[index].completed = !plan[index].completed;
+            localStorage.setItem('readingPlan', JSON.stringify(plan));
+            loadReadingPlan();
+        }
+
+        // Event listeners
+        document.getElementById('versionSelect').addEventListener('change', (e) => {
+            currentVersion = e.target.value;
+        });
+
+        // Initialize
+        fetchVersions();
+        fetchBooks();
+        studyHistory = JSON.parse(localStorage.getItem('studyHistory') || '[]');
+        updateHistoryDisplay();
+        loadNotes();
+        loadBookmarks();
+        loadReadingPlan();
+
+        // Chatbot implementation
+        window.difyChatbotConfig = {
+            token: 'Hr8jQqhSn7uDVmKL'
+        };
+    </script>
+    <script src="https://udify.app/embed.min.js" id="Hr8jQqhSn7uDVmKL" defer></script>
+</body>
+</html>
